@@ -1,13 +1,15 @@
-# Requisitos funcionais
+# SaaS agendamento para Clínicas
 
-[] Clinica deve conseguir gerenciar médicos (CRUD)
-   - Disponibilidade, preço da consulta
+## Setup do projeto
 
-[] Autenticação de usuários e médicos
-   - Usuário pode ter varias clinicas
-   
-[] Clínica deve conseguir gerenciar pacientes desses médicos (CRUD)
+- [x] Inicialização do projeto Next.js
+- [x] Configuração de ferramentas (ESlint, Prettier, Tailwind)
+- [x] Configuração do Drizzle e banco de dados Postgress com Docker
+- [x] Configuração do Shadcn/ui
 
-[] Clínica deve conseguir realizar agendamentos de tal médico para tal paciente
+## Autenticação e configuração do estabelecimento
 
-[] Planos de assinatura
+- [] Tela de login e criação da conta
+- [] Login com email e senha
+- [] Login com o Google
+- [] Criação de clínicas
