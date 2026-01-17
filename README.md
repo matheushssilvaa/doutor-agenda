@@ -9,7 +9,7 @@
 
 ## Autenticação e configuração do estabelecimento
 
-- [] Tela de login e criação da conta
+- [x] Tela de login e criação da conta
 - [] Login com email e senha
 - [] Login com o Google
 - [] Criação de clínicas
