@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form"
 import { Loader2 } from "lucide-react"
 import z from "zod"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const registerSchema = z.object({
     name: z.string().trim().min(3, { message: "Nome é obrigatório" }),
@@ -36,6 +37,12 @@ const SignUpForm = () => {
         }, {
             onSuccess: () => {
                 router.push("/dashboard")
+            },
+            onError: (ctx) => {
+                console.log(ctx.error)
+                if (ctx.error.code == "USER_ALREADY_EXISTS") {
+                    toast.error("Email já cadastrado. Faça login ou recupere sua senha abaixo")
+                }
             }
         })
     }
