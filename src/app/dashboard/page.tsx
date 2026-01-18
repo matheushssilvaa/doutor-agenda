@@ -1,6 +1,22 @@
-const DashboardPage = () => {
+import { auth } from "@/lib/auth"
+import { headers } from "next/headers"
+import SignOutButton from "./components/Sign-out"
+import { redirect } from "next/navigation"
+
+const DashboardPage = async () => {
+    const session = await auth.api.getSession({
+        headers: await headers()
+    })
+    if (!session?.user) {
+        redirect("/authentication")
+    }
     return (
-        <h1>Dashboard</h1>
+        <div>
+            <h1>Dashboard</h1>
+            <h1>{session?.user.name}</h1>
+            <h1>{session?.user.email}</h1>
+            <SignOutButton />
+        </div>
     )
 }
 
