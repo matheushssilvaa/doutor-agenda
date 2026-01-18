@@ -13,7 +13,7 @@ const AuthenticationPage = async () => {
         redirect("/dashboard")
     }
     return (
-        <div className="flex h-screen w-screen items-center justify-center">
+        < div className="flex h-screen w-screen items-center justify-center" >
             <div className="flex w-full max-w-sm flex-col gap-6">
                 <Tabs defaultValue="login">
                     <TabsList>
@@ -28,7 +28,7 @@ const AuthenticationPage = async () => {
                     </TabsContent>
                 </Tabs>
             </div>
-        </div>
+        </div >
     )
 }
 
