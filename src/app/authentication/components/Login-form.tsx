@@ -4,17 +4,21 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
+import { toast } from "sonner"
 
 import z from "zod"
 
 const loginSchema = z.object({
-    name: z.string().trim().min(3, { message: "Nome é obrigatório" }),
     email: z.email({ message: "Email inválido" }).trim().min(1),
     password: z.string().trim().min(8, { message: "Senha deve ter pelo menos 8 caracteres" })
 })
 
 const LoginForm = () => {
+
+    const router = useRouter()
 
     const form = useForm<z.infer<typeof loginSchema>>({
         resolver: zodResolver(loginSchema),
@@ -26,6 +30,17 @@ const LoginForm = () => {
 
     async function onSubmit(values: z.infer<typeof loginSchema>) {
         console.log(values)
+        await authClient.signIn.email({
+            email: values.email,
+            password: values.password
+        }, {
+            onSuccess: () => {
+                router.push("/dashboard")
+            },
+            onError: () => {
+                toast.error("Email ou senha inválidos")
+            }
+        })
     }
 
     return (
@@ -68,7 +83,16 @@ const LoginForm = () => {
                         />
                     </CardContent>
                     <CardFooter>
-                        <Button type="submit" className="w-full">Entrar</Button>
+                        <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={form.formState.isSubmitting} >
+                            {
+                                form.formState.isSubmitting ? (
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                ) : ("Entrar")
+                            }
+                        </Button>
                     </CardFooter>
                 </form>
             </Form>
