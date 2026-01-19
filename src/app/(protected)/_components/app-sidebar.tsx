@@ -27,6 +27,8 @@ import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 import { useRouter } from "next/navigation"
+import { Avatar } from "@/components/ui/avatar"
+import { AvatarFallback } from "@radix-ui/react-avatar"
 
 const items = [
 	{
@@ -53,6 +55,8 @@ const items = [
 
 export function AppSidebar() {
 	const router = useRouter()
+	const session = authClient.useSession()
+
 	const handleSignOut = async () => {
 		await authClient.signOut({
 			fetchOptions: {
@@ -91,7 +95,12 @@ export function AppSidebar() {
 					<SidebarMenuItem>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<Button>Clinica</Button>
+								<SidebarMenuButton size="lg">
+									<div>
+										<p className="text-sm">{session.data?.user.clinicId.name}</p>
+										<p className="text-sm text-muted-foreground">{session.data?.user.email}</p>
+									</div>
+								</SidebarMenuButton>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent>
 								<DropdownMenuItem onClick={handleSignOut}>
