@@ -12,4 +12,13 @@
 - [x] Tela de login e criação da conta
 - [x] Login com email e senha
 - [x] Login com o Google
-- [] Criação de clínicas
+- [x] Criação de clínicas
+
+## Gerenciamento de Profissionais e disponibilidade
+
+- [x] Sidebar e Route Groups
+- [x] Página de médicos
+- [] Criação de médicos e NextSafeAction
+- [] Listagem de médicos
+- [] Atualização de médicos
+- [] Deleção de médicos

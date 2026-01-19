@@ -24,11 +24,8 @@ import Link from "next/link"
 import Image from "next/image"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
-import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
-import { useRouter } from "next/navigation"
-import { Avatar } from "@/components/ui/avatar"
-import { AvatarFallback } from "@radix-ui/react-avatar"
+import { usePathname, useRouter } from "next/navigation"
 
 const items = [
 	{
@@ -53,9 +50,10 @@ const items = [
 	},
 ]
 
-export function AppSidebar() {
+const AppSidebar = () => {
 	const router = useRouter()
 	const session = authClient.useSession()
+	const pathName = usePathname()
 
 	const handleSignOut = async () => {
 		await authClient.signOut({
@@ -78,7 +76,7 @@ export function AppSidebar() {
 						<SidebarMenu>
 							{items.map((item) => (
 								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild>
+									<SidebarMenuButton asChild isActive={pathName == item.url}>
 										<Link href={item.url}>
 											<item.icon />
 											<span>{item.title}</span>
@@ -97,7 +95,7 @@ export function AppSidebar() {
 							<DropdownMenuTrigger asChild>
 								<SidebarMenuButton size="lg">
 									<div>
-										<p className="text-sm">{session.data?.user.clinicId.name}</p>
+										<p className="text-sm">{session.data?.user?.clinic?.name}</p>
 										<p className="text-sm text-muted-foreground">{session.data?.user.email}</p>
 									</div>
 								</SidebarMenuButton>
@@ -115,3 +113,5 @@ export function AppSidebar() {
 		</Sidebar>
 	)
 }
+
+export default AppSidebar
