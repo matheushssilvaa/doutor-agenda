@@ -18,7 +18,7 @@
 
 - [x] Sidebar e Route Groups
 - [x] Página de médicos
-- [] Criação de médicos e NextSafeAction
+- [x] Criação de médicos e NextSafeAction
 - [] Listagem de médicos
 - [] Atualização de médicos
 - [] Deleção de médicos

@@ -1,12 +1,16 @@
-import { Button } from "@/components/ui/button"
-import { PageActions, PageContainer, PageContent, PageDescription, PageHeader, PageHeaderContent, PageTitle } from "@/components/ui/page-container"
-import { db } from "@/db"
-import { user, usersToClinicsTable } from "@/db/schema"
+import {
+	PageActions,
+	PageContainer,
+	PageContent,
+	PageDescription,
+	PageHeader,
+	PageHeaderContent,
+	PageTitle
+} from "@/components/ui/page-container"
 import { auth } from "@/lib/auth"
-import { eq } from "drizzle-orm"
-import { Plus } from "lucide-react"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
+import AddDoctorButton from "./_components/Add-doctor-button"
 
 const DoctorPage = async () => {
 	const session = await auth.api.getSession({
@@ -27,10 +31,7 @@ const DoctorPage = async () => {
 						<PageDescription>Gerencie os médicos de sua clínica</PageDescription>
 					</PageHeaderContent>
 					<PageActions>
-						<Button>
-							<Plus />
-							Adicionar médico
-						</Button>
+						<AddDoctorButton />
 					</PageActions>
 				</PageHeader>
 				<PageContent>
