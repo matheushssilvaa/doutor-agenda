@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectGroup, SelectLabel, SelectTrigger, SelectV
 import { SelectItem } from "@/components/ui/select"
 import { medicalSpecialties } from "../_constantes"
 import { NumericFormat } from "react-number-format"
+import { useAction } from "next-safe-action/hooks"
+import { upsertDoctor } from "@/app/actions/upsert-doctor"
+import { toast } from "sonner"
 
 const formSchema = z.object({
 	name: z.string().trim().min(1, { message: "O nome é obrigatório" }),
@@ -28,7 +31,12 @@ const formSchema = z.object({
 	path: ["availableToTime"]
 })
 
-const UpsertDoctorForm = () => {
+
+interface upsertDoctorProps {
+	onSuccess?: () => void
+}
+
+const UpsertDoctorForm = ({ onSuccess }: upsertDoctorProps) => {
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -42,8 +50,24 @@ const UpsertDoctorForm = () => {
 		}
 	})
 
+	const upsertDoctorAction = useAction(upsertDoctor, {
+		onSuccess: () => {
+			toast.success("Médico adicionado com sucesso!"),
+				onSuccess?.()
+		},
+		onError: (e) => {
+			console.error(e)
+			toast.error("Ocorreu um erro, tente novamente.")
+		}
+	})
+
 	const onSubmit = (values: z.infer<typeof formSchema>) => {
-		console.log(values)
+		upsertDoctorAction.execute({
+			...values,
+			availableFromWeekDay: parseInt(values.availableFromWeekDay),
+			availableToWeekDay: parseInt(values.availableToWeekDay),
+			appointmentPriceInCents: values.appointmentPrice * 100
+		})
 	}
 
 	return (
@@ -327,7 +351,9 @@ const UpsertDoctorForm = () => {
 						)}
 					/>
 					<DialogFooter>
-						<Button type="submit">Adicionar</Button>
+						<Button type="submit" disabled={upsertDoctorAction.isPending}>
+							{upsertDoctorAction.isPending ? "Criando..." : "Adicionar"}
+						</Button>
 					</DialogFooter>
 				</form>
 			</Form>
