@@ -20,5 +20,9 @@
 - [x] Página de médicos
 - [x] Criação de médicos e NextSafeAction
 - [x] Listagem de médicos
-- [] Atualização de médicos
-- [] Deleção de médicos
+- [x] Atualização de médicos
+- [x] Deleção de médicos
+
+## Gerenciamento de pacientes e consultas
+
+- [x] Criação, atualização e exclusão de um paciente

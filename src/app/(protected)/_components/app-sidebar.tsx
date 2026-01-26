@@ -26,6 +26,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/component
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 import { authClient } from "@/lib/auth-client"
 import { usePathname, useRouter } from "next/navigation"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 const items = [
 	{
@@ -64,6 +65,10 @@ const AppSidebar = () => {
 			}
 		})
 	}
+
+	const initialsClinicName = session.data?.user.clinic?.name
+		.split(" ").map((name) => name[0]).join("")
+
 	return (
 		<Sidebar>
 			<SidebarHeader className="p-4 border-b">
@@ -94,6 +99,9 @@ const AppSidebar = () => {
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<SidebarMenuButton size="lg">
+									<Avatar>
+										<AvatarFallback>{initialsClinicName}</AvatarFallback>
+									</Avatar>
 									<div>
 										<p className="text-sm">{session.data?.user.clinic?.name}</p>
 										<p className="text-sm text-muted-foreground">{session.data?.user.email}</p>

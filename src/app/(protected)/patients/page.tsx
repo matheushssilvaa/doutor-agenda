@@ -10,13 +10,13 @@ import {
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
-import AddDoctorButton from "./_components/Add-doctor-button"
 import { db } from "@/db"
 import { eq } from "drizzle-orm"
-import { doctorsTable } from "@/db/schema"
-import DoctorCard from "./_components/Doctor-card"
+import { patientsTable } from "@/db/schema"
+import AddPatientButton from "./_components/Add-patient-button"
+import { columns, DataTable } from "./_components/Patient-data-table"
 
-const DoctorPage = async () => {
+const PatientPage = async () => {
 	const session = await auth.api.getSession({
 		headers: await headers()
 	})
@@ -26,9 +26,8 @@ const DoctorPage = async () => {
 	if (!session.user.clinic) {
 		redirect("/clinic-form")
 	}
-
-	const doctors = await db.query.doctorsTable.findMany({
-		where: eq(doctorsTable.clinicId, session?.user?.clinic?.id)
+	const patients = await db.query.patientsTable.findMany({
+		where: eq(patientsTable.clinicId, session.user.clinic.id)
 	})
 
 	return (
@@ -36,21 +35,19 @@ const DoctorPage = async () => {
 			<PageContainer>
 				<PageHeader>
 					<PageHeaderContent>
-						<PageTitle>Médicos</PageTitle>
-						<PageDescription>Gerencie os médicos de sua clínica</PageDescription>
+						<PageTitle>Pacientes</PageTitle>
+						<PageDescription>Gerencie os pacientes de sua clínica</PageDescription>
 					</PageHeaderContent>
 					<PageActions>
-						<AddDoctorButton />
+						<AddPatientButton />
 					</PageActions>
 				</PageHeader>
 				<PageContent>
-					<div className="grid grid-cols-3 gap-6">
-						{doctors.map(doctor => <DoctorCard key={doctor.id} doctor={doctor} />)}
-					</div>
+					<DataTable columns={columns} data={patients} />
 				</PageContent>
 			</PageContainer>
 		</>
 	)
 }
 
-export default DoctorPage
+export default PatientPage
