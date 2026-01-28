@@ -15,13 +15,38 @@ import {
 	TableRow
 } from "@/components/ui/table";
 import { appointmentsTable } from "@/db/schema";
+import ActionsTableAppointment from "./Actions-table-appointment";
 
-type Appointment = typeof appointmentsTable.$inferSelect;
+type Appointment = typeof appointmentsTable.$inferSelect & {
+	patient: {
+		id: string,
+		name: string,
+		phoneNumber: string,
+		sex: 'male' | 'female'
+	},
+	doctor: {
+		id: string,
+		name: string,
+		specialty: string
+	}
+};
 
 export const columns: ColumnDef<Appointment>[] = [
 	{
-		accessorKey: "id",
-		header: "ID"
+		accessorKey: "patientId",
+		header: "Paciente",
+		cell: (params) => {
+			const appointment = params.row.original
+			return `${appointment.patient.name}`
+		}
+	},
+	{
+		accessorKey: "doctorId",
+		header: "Médico",
+		cell: ({ row }) => {
+			const appointment = row.original
+			return `${appointment.doctor.name}`
+		}
 	},
 	{
 		accessorKey: "date",
@@ -32,19 +57,32 @@ export const columns: ColumnDef<Appointment>[] = [
 		}
 	},
 	{
-		accessorKey: "patientId",
-		header: "Paciente"
-	},
-	{
-		accessorKey: "doctorId",
-		header: "Médico"
+		accessorKey: "appointmentPriceInCents",
+		header: "Preço",
+		cell: (params) => {
+			const appointment = params.row.original
+			const price = appointment.appointmentInCents / 100
+			return new Intl.NumberFormat('pt-br', {
+				style: "currency",
+				currency: "brl",
+			}).format(price)
+		}
 	},
 	{
 		accessorKey: "createdAt",
-		header: "Criado em",
+		header: "Data de criação",
 		cell: ({ row }) => {
 			const date = row.original.createdAt
 			return date ? new Date(date).toLocaleDateString('pt-BR') : '-'
+		}
+	},
+	{
+		accessorKey: "actions",
+		header: "Ações",
+		cell: (row) => {
+			return (
+				<ActionsTableAppointment appointments={row.row.original} />
+			)
 		}
 	},
 ]

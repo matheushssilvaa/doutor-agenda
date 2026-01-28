@@ -26,7 +26,7 @@ const DialogActionsTable = ({ patient }: DialogActionTableProps) => {
 			</DialogTrigger>
 
 			<DialogTrigger asChild>
-				<Button variant="secondary">
+				<Button>
 					<EyeIcon />
 				</Button>
 			</DialogTrigger>

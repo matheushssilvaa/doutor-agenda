@@ -26,4 +26,4 @@
 ## Gerenciamento de pacientes e consultas
 
 - [x] Criação, atualização e exclusão de um paciente
-- [x] Criação e listagem de agendamentos
+- [x] Criação, listagem e exclusão de agendamentos
