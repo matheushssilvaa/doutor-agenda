@@ -104,7 +104,7 @@ const AppSidebar = () => {
 									</Avatar>
 									<div>
 										<p className="text-sm">{session.data?.user.clinic?.name}</p>
-										<p className="text-sm text-muted-foreground">{session.data?.user.email}</p>
+										<p className="truncate w-[85%] text-sm text-muted-foreground">{session.data?.user.email}</p>
 									</div>
 								</SidebarMenuButton>
 							</DropdownMenuTrigger>

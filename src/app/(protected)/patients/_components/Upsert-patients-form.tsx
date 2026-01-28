@@ -74,27 +74,20 @@ const UpsertPatientsForm = ({ onSuccess, patient }: upsertPatientsProps) => {
 			onSuccess?.()
 		},
 		onError: ({ error }) => {
-			console.log("Objeto de erro completo:", error)
-
-			// O next-safe-action coloca a mensagem em serverError
-			// e serverError pode ser string ou objeto com message
 			let errorMessage = ""
 
 			if (typeof error.serverError === 'string') {
 				errorMessage = error.serverError
 			} else if (error.serverError && typeof error.serverError === 'object') {
-				// Às vezes vem como objeto { message: "..." }
 				errorMessage = error.serverError.message || JSON.stringify(error.serverError)
 			}
 
-			// Fallback: tenta pegar a mensagem de outras formas
 			if (!errorMessage && error.fetchError) {
 				errorMessage = error.fetchError
 			}
 
 			console.log("Mensagem extraída:", errorMessage)
 
-			// Mostra a mensagem (ela já vem formatada da action)
 			if (errorMessage) {
 				toast.error(errorMessage)
 			} else {
