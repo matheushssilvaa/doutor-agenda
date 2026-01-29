@@ -8,6 +8,12 @@ import { headers } from "next/headers";
 import { actionClient } from "@/lib/next-safe-action";
 import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 	.action(async ({ parsedInput }) => {
@@ -24,12 +30,18 @@ export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 			throw new Error("Clinic not found")
 		}
 
+		const dateString = dayjs(parsedInput.date).format("YYYY-MM-DD");
+		const appointmentDateTime = dayjs.tz(
+			`${dateString} ${parsedInput.time}`,
+			"America/Sao_Paulo"
+		).toDate();
+
 		try {
 			if (parsedInput.id) {
 				await db
 					.update(appointmentsTable)
 					.set({
-						...parsedInput,
+						date: appointmentDateTime,
 						clinicId: session?.user?.clinic?.id,
 						patientId: parsedInput.patientId,
 						doctorId: parsedInput.doctorId,
@@ -41,7 +53,7 @@ export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 				await db
 					.insert(appointmentsTable)
 					.values({
-						...parsedInput,
+						date: appointmentDateTime,
 						clinicId: session?.user?.clinic?.id,
 						patientId: parsedInput.patientId,
 						doctorId: parsedInput.doctorId,

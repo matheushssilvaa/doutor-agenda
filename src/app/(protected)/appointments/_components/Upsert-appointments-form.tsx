@@ -10,6 +10,8 @@ import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { format } from "date-fns"
+
 import { upsertAppointment } from "@/app/actions/upsert-appointment";
 import { getAvailableTimes } from "@/app/actions/get-available-times";
 import { Button } from "@/components/ui/button";
@@ -37,6 +39,10 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { doctorsTable, patientsTable } from "@/db/schema";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
 	patientId: z.string().min(1, {
@@ -95,6 +101,8 @@ const AddAppointmentForm = ({
 		enabled: !!selectedDate && !!selectedDoctorId,
 	});
 
+	console.log(availableTimes)
+
 	// Atualizar o preço quando o médico for selecionado
 	useEffect(() => {
 		if (selectedDoctorId) {
@@ -138,6 +146,19 @@ const AddAppointmentForm = ({
 			...values,
 			appointmentPriceInCents: values.appointmentPriceInCents * 100
 		});
+	};
+
+	const isDateAvailable = (date: Date) => {
+		if (!selectedDoctorId) return false;
+		const selectedDoctor = doctors.find(
+			(doctor) => doctor.id === selectedDoctorId,
+		);
+		if (!selectedDoctor) return false;
+		const dayOfWeek = date.getDay();
+		return (
+			dayOfWeek >= selectedDoctor?.availableFromWeekDay &&
+			dayOfWeek <= selectedDoctor?.availableToWeekDay
+		);
 	};
 
 	const isDateTimeEnabled = selectedPatientId && selectedDoctorId;
@@ -239,14 +260,38 @@ const AddAppointmentForm = ({
 						render={({ field }) => (
 							<FormItem className="flex flex-col">
 								<FormLabel>Data</FormLabel>
-								<Input
-									type="date"
-									value={field.value ? dayjs(field.value).format('YYYY-MM-DD') : ''}
-									onChange={(e) => {
-										const dateValue = e.target.value;
-										field.onChange(dateValue ? new Date(dateValue) : undefined);
-									}}
-								/>
+								<Popover>
+									<PopoverTrigger asChild>
+										<FormControl>
+											<Button
+												variant={"outline"}
+												disabled={!isDateTimeEnabled}
+												className={cn(
+													"w-full justify-start text-left font-normal",
+													!field.value && "text-muted-foreground",
+												)}
+											>
+												<CalendarIcon className="mr-2 h-4 w-4" />
+												{field.value ? (
+													format(field.value, "PPP")
+												) : (
+													<span>Selecione uma data</span>
+												)}
+											</Button>
+										</FormControl>
+									</PopoverTrigger>
+									<PopoverContent className="w-auto p-0" align="start">
+										<Calendar
+											mode="single"
+											selected={field.value}
+											onSelect={field.onChange}
+											disabled={(date) =>
+												date < new Date() || !isDateAvailable(date)
+											}
+											initialFocus
+										/>
+									</PopoverContent>
+								</Popover>
 								<FormMessage />
 							</FormItem>
 						)}
@@ -269,13 +314,13 @@ const AddAppointmentForm = ({
 										</SelectTrigger>
 									</FormControl>
 									<SelectContent>
-										{availableTimes?.data?.map((time: any) => (
+										{availableTimes?.data?.map((time) => (
 											<SelectItem
 												key={time.value}
 												value={time.value}
 												disabled={!time.available}
 											>
-												{time.label} {!time.available && "(Indisponível)"}
+												{time.label} {!time.available ? "(Indisponivel)" : ""}
 											</SelectItem>
 										))}
 									</SelectContent>

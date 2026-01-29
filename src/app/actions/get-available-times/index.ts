@@ -3,7 +3,7 @@
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { z } from "zod";
 
@@ -20,7 +20,7 @@ export const getAvailableTimes = actionClient
 	.schema(
 		z.object({
 			doctorId: z.string(),
-			date: z.string().date(), // YYYY-MM-DD,
+			date: z.string().date(),
 		}),
 	)
 	.action(async ({ parsedInput }) => {
@@ -46,14 +46,22 @@ export const getAvailableTimes = actionClient
 		if (!doctorIsAvailable) {
 			return [];
 		}
+
 		const appointments = await db.query.appointmentsTable.findMany({
-			where: eq(appointmentsTable.doctorId, parsedInput.doctorId),
+			where: and(
+				eq(appointmentsTable.doctorId, parsedInput.doctorId),
+				eq(appointmentsTable.clinicId, session.user.clinic.id)
+			),
 		});
+
 		const appointmentsOnSelectedDate = appointments
 			.filter((appointment) => {
-				return dayjs(appointment.date).isSame(parsedInput.date, "day");
+				return dayjs(appointment.date).tz("America/Sao_Paulo").isSame(parsedInput.date, "day");
 			})
-			.map((appointment) => dayjs(appointment.date).format("HH:mm:ss"));
+			.map((appointment) => {
+				return dayjs(appointment.date).tz("America/Sao_Paulo").format("HH:mm:ss");
+			});
+
 		const timeSlots = generateTimeSlots();
 
 		const doctorAvailableFrom = dayjs()
@@ -73,8 +81,8 @@ export const getAvailableTimes = actionClient
 				.utc()
 				.set("hour", Number(time.split(":")[0]))
 				.set("minute", Number(time.split(":")[1]))
-				.set("second", 0);
-
+				.set("second", 0)
+				.local()
 			return (
 				date.format("HH:mm:ss") >= doctorAvailableFrom.format("HH:mm:ss") &&
 				date.format("HH:mm:ss") <= doctorAvailableTo.format("HH:mm:ss")
