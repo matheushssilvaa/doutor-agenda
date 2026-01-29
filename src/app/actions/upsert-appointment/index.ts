@@ -11,6 +11,7 @@ import { eq } from "drizzle-orm";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import { getAvailableTimes } from "../get-available-times";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -30,7 +31,21 @@ export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 			throw new Error("Clinic not found")
 		}
 
+		const availableTimes = await getAvailableTimes({
+			doctorId: parsedInput.doctorId,
+			date: dayjs(parsedInput.date).format("YYYY-MM-DD")
+		})
+
+		const isTimeAvailable = availableTimes?.data?.some(
+			(time) => time.value == parsedInput.time && time.available
+		)
+
+		if (!isTimeAvailable) {
+			throw new Error("Time not available")
+		}
+
 		const dateString = dayjs(parsedInput.date).format("YYYY-MM-DD");
+
 		const appointmentDateTime = dayjs.tz(
 			`${dateString} ${parsedInput.time}`,
 			"America/Sao_Paulo"
