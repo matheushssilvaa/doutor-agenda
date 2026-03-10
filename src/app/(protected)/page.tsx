@@ -1,5 +1,5 @@
 const Protected = () => {
-	return(
+	return (
 		<h1>Protected</h1>
 	)
 }
