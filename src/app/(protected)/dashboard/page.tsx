@@ -67,7 +67,7 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 		},
 	});
 
-	console.log(todayAppointments)
+	console.log("today appointments: ", todayAppointments)
 
 	return (
 		<PageContainer>

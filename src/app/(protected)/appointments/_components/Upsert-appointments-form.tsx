@@ -10,7 +10,7 @@ import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { format } from "date-fns"
+import { format, startOfDay } from "date-fns"
 
 import { upsertAppointment } from "@/app/actions/upsert-appointment";
 import { getAvailableTimes } from "@/app/actions/get-available-times";
@@ -286,7 +286,7 @@ const AddAppointmentForm = ({
 											selected={field.value}
 											onSelect={field.onChange}
 											disabled={(date) =>
-												date < new Date() || !isDateAvailable(date)
+												date < startOfDay(new Date()) || !isDateAvailable(date)
 											}
 											initialFocus
 										/>

@@ -5,7 +5,8 @@ import {
 	LayoutDashboard,
 	LogOut,
 	Stethoscope,
-	UsersRound
+	UsersRound,
+	GemIcon
 } from "lucide-react"
 
 import {
@@ -48,6 +49,11 @@ const items = [
 		title: "Pacientes",
 		url: "/patients",
 		icon: UsersRound,
+	},
+	{
+		title: "Planos",
+		url: "/subscription",
+		icon: GemIcon,
 	},
 ]
 

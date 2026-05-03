@@ -39,7 +39,24 @@ export const auth = betterAuth({
 		}
 	})],
 	user: {
-		modelName: "usersTable"
+		modelName: "usersTable",
+		additionalFields: {
+			stripeCustomerId: {
+				type: "string",
+				fieldName: "stripeCustomerId",
+				required: false
+			},
+			stripeSubscriptionId: {
+				type: "string",
+				fieldName: "stripeSubscriptionId",
+				required: false
+			},
+			plan: {
+				type: "string",
+				fieldName: "plan",
+				required: false
+			}
+		}
 	},
 	session: {
 		modelName: "sessionsTable"
