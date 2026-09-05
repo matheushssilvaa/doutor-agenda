@@ -1,6 +1,7 @@
 import { db } from "@/db"
 import { usersTable } from "@/db/schema"
 import { eq } from "drizzle-orm"
+import { NextResponse } from "next/server"
 import Stripe from "stripe"
 
 export const POST = async (request: Request) => {
@@ -21,9 +22,10 @@ export const POST = async (request: Request) => {
 	const event = await stripe.webhooks.constructEventAsync(
 		text,
 		signature,
-		process.env.STRIPE_WEBHOOK_SECRET, //STRIPE_WEBHOOK_SECRET pegar da ferramenta de CLI do Stripe
+		process.env.STRIPE_WEBHOOK_SECRET, //STRIPE_WEBHOOK_SECRET gerado pela ferramenta de CLI do Stripe
 	)
 
+	// Filtrando os eventos que o Stripe retorna para o Webhook
 	switch (event.type) {
 		case "invoice.paid": {
 			if (!event.data.object.id) {
@@ -36,6 +38,11 @@ export const POST = async (request: Request) => {
 				throw new Error()
 			}
 			const userId = subscription.metadata.userId
+
+			if (!userId) {
+				throw new Error("User ID not found")
+			}
+
 			await db.update(usersTable).set({
 				stripeCustomerId: subscription.id,
 				stripeSubscriptionId: subscription.customer as string,
@@ -53,6 +60,11 @@ export const POST = async (request: Request) => {
 				throw new Error()
 			}
 			const userId = subscription.metadata.userId
+
+			if (!userId) {
+				throw new Error("User ID not found")
+			}
+
 			await db.update(usersTable).set({
 				stripeCustomerId: subscription.id,
 				stripeSubscriptionId: subscription.customer as string,
@@ -60,4 +72,7 @@ export const POST = async (request: Request) => {
 			}).where(eq(usersTable.id, userId))
 		}
 	}
+	return NextResponse.json({
+		received: true
+	})
 }
