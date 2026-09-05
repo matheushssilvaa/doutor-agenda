@@ -13,15 +13,18 @@ import {
 	PageHeaderContent,
 	PageTitle,
 } from "@/components/ui/page-container";
+import { db } from "@/db";
+import { doctorsTable, patientsTable } from "@/db/schema";
 import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
+import { eq } from "drizzle-orm";
 
 import AppointmentCharts from "./_components/appointments-chart"
 import { DatePicker } from "./_components/data-picker";
 import StatsCards from "./_components/stats-cards"
 import TopDoctors from "./_components/top-doctor";
 import TopSpecialties from "./_components/top-specialities";
-import { columns, DataTable } from "../appointments/_components/Appointment-data-table";
+import { DataTable } from "../appointments/_components/Appointment-data-table";
 
 interface DashboardPageProps {
 	searchParams: Promise<{
@@ -67,7 +70,15 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 		},
 	});
 
-	console.log("today appointments: ", todayAppointments)
+	// Necessários para os selects do formulário de edição de agendamento.
+	const [patients, doctors] = await Promise.all([
+		db.query.patientsTable.findMany({
+			where: eq(patientsTable.clinicId, session.user.clinic.id),
+		}),
+		db.query.doctorsTable.findMany({
+			where: eq(doctorsTable.clinicId, session.user.clinic.id),
+		}),
+	]);
 
 	return (
 		<PageContainer>
@@ -105,8 +116,9 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 						</CardHeader>
 						<CardContent>
 							<DataTable
-								columns={columns}
 								data={todayAppointments}
+								patients={patients}
+								doctors={doctors}
 							/>
 						</CardContent>
 					</Card>

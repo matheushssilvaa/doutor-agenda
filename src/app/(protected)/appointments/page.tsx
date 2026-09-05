@@ -14,7 +14,7 @@ import { db } from "@/db"
 import { eq } from "drizzle-orm"
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema"
 import AddAppointmentButton from "./_components/Add-appointment-button"
-import { columns, DataTable } from "./_components/Appointment-data-table"
+import { DataTable } from "./_components/Appointment-data-table"
 
 const AppointmentPages = async () => {
 
@@ -60,8 +60,9 @@ const AppointmentPages = async () => {
 				</PageHeader>
 				<PageContent>
 					<DataTable
-						columns={columns}
 						data={appointments}
+						patients={patients}
+						doctors={doctors}
 					/>
 				</PageContent>
 			</PageContainer>

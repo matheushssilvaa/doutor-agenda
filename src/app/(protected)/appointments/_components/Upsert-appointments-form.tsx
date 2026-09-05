@@ -3,8 +3,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { useAction } from "next-safe-action/hooks";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
@@ -38,11 +40,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { doctorsTable, patientsTable } from "@/db/schema";
+import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const TIME_ZONE = "America/Sao_Paulo";
 
 const formSchema = z.object({
 	patientId: z.string().min(1, {
@@ -62,29 +69,53 @@ const formSchema = z.object({
 	}),
 });
 
-interface AddAppointmentFormProps {
+type Appointment = typeof appointmentsTable.$inferSelect;
+
+interface UpsertAppointmentFormProps {
 	isOpen?: boolean;
 	patients: (typeof patientsTable.$inferSelect)[];
 	doctors: (typeof doctorsTable.$inferSelect)[];
+	appointment?: Appointment;
 	onSuccess?: () => void;
 }
 
-const AddAppointmentForm = ({
-	patients,
-	doctors,
-	onSuccess,
-	isOpen,
-}: AddAppointmentFormProps) => {
-	const form = useForm<z.infer<typeof formSchema>>({
-		shouldUnregister: true,
-		resolver: zodResolver(formSchema),
-		defaultValues: {
+const getDefaultValues = (appointment?: Appointment) => {
+	if (!appointment) {
+		return {
 			patientId: "",
 			doctorId: "",
 			appointmentPriceInCents: 0,
 			date: undefined,
 			time: "",
-		},
+		};
+	}
+
+	const appointmentDate = dayjs(appointment.date).tz(TIME_ZONE);
+
+	return {
+		patientId: appointment.patientId,
+		doctorId: appointment.doctorId,
+		appointmentPriceInCents: appointment.appointmentInCents / 100,
+		date: new Date(
+			appointmentDate.year(),
+			appointmentDate.month(),
+			appointmentDate.date(),
+		),
+		time: appointmentDate.format("HH:mm:ss"),
+	};
+};
+
+const UpsertAppointmentForm = ({
+	patients,
+	doctors,
+	appointment,
+	onSuccess,
+	isOpen,
+}: UpsertAppointmentFormProps) => {
+	const form = useForm<z.infer<typeof formSchema>>({
+		shouldUnregister: true,
+		resolver: zodResolver(formSchema),
+		defaultValues: getDefaultValues(appointment),
 	});
 
 	const selectedDoctorId = form.watch("doctorId");
@@ -92,58 +123,74 @@ const AddAppointmentForm = ({
 	const selectedDate = form.watch("date");
 
 	const { data: availableTimes } = useQuery({
-		queryKey: ["available-times", selectedDate, selectedDoctorId],
+		queryKey: [
+			"available-times",
+			selectedDate,
+			selectedDoctorId,
+			appointment?.id,
+		],
 		queryFn: () =>
 			getAvailableTimes({
 				date: dayjs(selectedDate).format("YYYY-MM-DD"),
 				doctorId: selectedDoctorId,
+				appointmentId: appointment?.id,
 			}),
 		enabled: !!selectedDate && !!selectedDoctorId,
 	});
 
-	console.log(availableTimes)
+	const previousDoctorIdRef = useRef<string | undefined>(appointment?.doctorId);
 
-	// Atualizar o preço quando o médico for selecionado
+	// Atualizar o preço quando o médico for trocado pelo usuário
 	useEffect(() => {
-		if (selectedDoctorId) {
-			const selectedDoctor = doctors.find(
-				(doctor) => doctor.id === selectedDoctorId,
-			);
-			if (selectedDoctor) {
-				form.setValue(
-					"appointmentPriceInCents",
-					selectedDoctor.appointmentPriceInCents / 100,
-				);
-			}
+		if (!selectedDoctorId) {
+			return;
 		}
+		if (previousDoctorIdRef.current === selectedDoctorId) {
+			return;
+		}
+		previousDoctorIdRef.current = selectedDoctorId;
+
+		const selectedDoctor = doctors.find(
+			(doctor) => doctor.id === selectedDoctorId,
+		);
+		if (selectedDoctor) {
+			form.setValue(
+				"appointmentPriceInCents",
+				selectedDoctor.appointmentPriceInCents / 100,
+			);
+		}
+		form.setValue("time", "");
 	}, [selectedDoctorId, doctors, form]);
 
 	useEffect(() => {
 		if (isOpen) {
-			form.reset({
-				patientId: "",
-				doctorId: "",
-				appointmentPriceInCents: 0,
-				date: undefined,
-				time: "",
-			});
+			previousDoctorIdRef.current = appointment?.doctorId;
+			form.reset(getDefaultValues(appointment));
 		}
-	}, [isOpen, form]);
+	}, [isOpen, appointment, form]);
 
-	const createAppointmentAction = useAction(upsertAppointment, {
+	const upsertAppointmentAction = useAction(upsertAppointment, {
 		onSuccess: () => {
-			toast.success("Agendamento criado com sucesso.");
+			toast.success(
+				appointment
+					? "Agendamento atualizado com sucesso."
+					: "Agendamento criado com sucesso.",
+			);
 			onSuccess?.();
 		},
 		onError: () => {
-			toast.error("Erro ao criar agendamento.");
+			toast.error(
+				appointment
+					? "Erro ao atualizar agendamento."
+					: "Erro ao criar agendamento.",
+			);
 		},
 	});
 
 	const onSubmit = (values: z.infer<typeof formSchema>) => {
-		console.log("📤 Valores do formulário:", values);
-		createAppointmentAction.execute({
+		upsertAppointmentAction.execute({
 			...values,
+			id: appointment?.id,
 			appointmentPriceInCents: values.appointmentPriceInCents * 100
 		});
 	};
@@ -166,9 +213,13 @@ const AddAppointmentForm = ({
 	return (
 		<DialogContent className="sm:max-w-[500px]">
 			<DialogHeader>
-				<DialogTitle>Novo agendamento</DialogTitle>
+				<DialogTitle>
+					{appointment ? "Editar agendamento" : "Novo agendamento"}
+				</DialogTitle>
 				<DialogDescription>
-					Crie um novo agendamento para sua clínica.
+					{appointment
+						? "Altere os dados do agendamento abaixo."
+						: "Crie um novo agendamento para sua clínica."}
 				</DialogDescription>
 			</DialogHeader>
 			<Form {...form}>
@@ -181,7 +232,7 @@ const AddAppointmentForm = ({
 								<FormLabel>Paciente</FormLabel>
 								<Select
 									onValueChange={field.onChange}
-									defaultValue={field.value}
+									value={field.value}
 								>
 									<FormControl>
 										<SelectTrigger className="w-full">
@@ -209,7 +260,7 @@ const AddAppointmentForm = ({
 								<FormLabel>Médico</FormLabel>
 								<Select
 									onValueChange={field.onChange}
-									defaultValue={field.value}
+									value={field.value}
 								>
 									<FormControl>
 										<SelectTrigger className="w-full">
@@ -305,7 +356,7 @@ const AddAppointmentForm = ({
 								<FormLabel>Horário</FormLabel>
 								<Select
 									onValueChange={field.onChange}
-									defaultValue={field.value}
+									value={field.value}
 									disabled={!isDateTimeEnabled || !selectedDate}
 								>
 									<FormControl>
@@ -331,10 +382,12 @@ const AddAppointmentForm = ({
 					/>
 
 					<DialogFooter>
-						<Button type="submit" disabled={createAppointmentAction.isPending}>
-							{createAppointmentAction.isPending
-								? "Criando..."
-								: "Criar agendamento"}
+						<Button type="submit" disabled={upsertAppointmentAction.isPending}>
+							{upsertAppointmentAction.isPending
+								? "Salvando..."
+								: appointment
+									? "Salvar"
+									: "Criar agendamento"}
 						</Button>
 					</DialogFooter>
 				</form>
@@ -343,4 +396,4 @@ const AddAppointmentForm = ({
 	);
 };
 
-export default AddAppointmentForm;
+export default UpsertAppointmentForm;

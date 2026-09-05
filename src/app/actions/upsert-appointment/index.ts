@@ -33,7 +33,8 @@ export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 
 		const availableTimes = await getAvailableTimes({
 			doctorId: parsedInput.doctorId,
-			date: dayjs(parsedInput.date).format("YYYY-MM-DD")
+			date: dayjs(parsedInput.date).format("YYYY-MM-DD"),
+			appointmentId: parsedInput.id
 		})
 
 		const isTimeAvailable = availableTimes?.data?.some(

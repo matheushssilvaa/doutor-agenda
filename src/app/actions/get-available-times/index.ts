@@ -21,6 +21,9 @@ export const getAvailableTimes = actionClient
 		z.object({
 			doctorId: z.string(),
 			date: z.string().date(),
+			// Quando estamos editando um agendamento, o horário dele não deve
+			// ser considerado ocupado.
+			appointmentId: z.string().optional(),
 		}),
 	)
 	.action(async ({ parsedInput }) => {
@@ -56,6 +59,9 @@ export const getAvailableTimes = actionClient
 
 		const appointmentsOnSelectedDate = appointments
 			.filter((appointment) => {
+				if (parsedInput.appointmentId && appointment.id === parsedInput.appointmentId) {
+					return false;
+				}
 				return dayjs(appointment.date).tz("America/Sao_Paulo").isSame(parsedInput.date, "day");
 			})
 			.map((appointment) => {
