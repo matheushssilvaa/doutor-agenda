@@ -4,7 +4,9 @@ import {
 	ColumnDef,
 	flexRender,
 	getCoreRowModel,
+	getFilteredRowModel,
 	getPaginationRowModel,
+
 	useReactTable
 } from "@tanstack/react-table"
 import {
@@ -28,7 +30,9 @@ import {
 	SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Edit2Icon, Trash2Icon } from "lucide-react";
+import { Edit2Icon, FilterIcon, Trash2Icon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type Appointment = typeof appointmentsTable.$inferSelect & {
 	patient: {
@@ -78,7 +82,9 @@ const getAppointmentsColumns = ({
 			enableHiding: false,
 		},
 		{
+			id: "patientId",
 			accessorKey: "patientId",
+			accessorFn: (row) => row.patient?.name,
 			header: "Paciente",
 			cell: (params) => {
 				const appointment = params.row.original
@@ -86,7 +92,9 @@ const getAppointmentsColumns = ({
 			}
 		},
 		{
+			id: "doctorId",
 			accessorKey: "doctorId",
+			accessorFn: (row) => row.doctor?.name,
 			header: "Médico",
 			cell: ({ row }) => {
 				const appointment = row.original
@@ -146,6 +154,7 @@ export function DataTable({
 	doctors
 }: DataTableProps) {
 	const [rowSelection, setRowSelection] = useState({})
+	const [search, setSearch] = useState('')
 
 	const columns = useMemo(
 		() => getAppointmentsColumns({ patients, doctors }),
@@ -156,29 +165,49 @@ export function DataTable({
 		data,
 		columns,
 		state: {
-			rowSelection
+			rowSelection,
+			globalFilter: search
 		},
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
+		getFilteredRowModel: getFilteredRowModel(),
+		getColumnCanGlobalFilter: () => true,
 		getCoreRowModel: getCoreRowModel(),
+		onGlobalFilterChange: setSearch,
 		getPaginationRowModel: getPaginationRowModel()
 	})
 
 	return (
 		<>
-			{table.getSelectedRowModel().rows.length > 0 && (
-				<div className="flex justify-end items-center gap-2 mb-4">
-					<Button variant="secondary">
-						<Trash2Icon />
-						Excluir selecionados
-					</Button>
-
-					<Button variant="secondary">
-						<Edit2Icon />
-						Alterar data ou horário
-					</Button>
+			<div className="flex justify-between items-center gap-2 mb-4 w-full">
+				<div>
+					{table.getSelectedRowModel().rows.length == 0 && (
+						<p className="text-sm text-muted-foreground">Nenhum agendamento selecionado</p>
+					)}
+					{table.getSelectedRowModel().rows.length > 0 && (
+						<p className="text-sm text-muted-foreground">{table.getSelectedRowModel().rows.length}{" "} Selecionado(s)</p>
+					)}
 				</div>
-			)}
+				<div className="flex gap-2">
+					{table.getSelectedRowModel().rows.length > 0 && (
+						<>
+							<Button variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/15">
+								<Trash2Icon />
+							</Button>
+
+							<Button variant="secondary">
+								<Edit2Icon />
+							</Button>
+						</>
+					)}
+					<div className="w-full">
+						<Input placeholder="Pesquise por pacientes"
+							value={search ?? ""}
+							onChange={(e) => setSearch(e.target.value)}
+						/>
+					</div>
+				</div>
+			</div>
 			<div className="overflow-hidden rounded-md border">
 				<Table>
 					<TableHeader>

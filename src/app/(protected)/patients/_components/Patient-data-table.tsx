@@ -4,6 +4,7 @@ import {
 	ColumnDef,
 	flexRender,
 	getCoreRowModel,
+	getFilteredRowModel,
 	getPaginationRowModel,
 	useReactTable
 } from "@tanstack/react-table"
@@ -23,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Edit2Icon, Trash2Icon } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 type Patient = typeof patientsTable.$inferSelect;
 
@@ -84,29 +86,51 @@ export function DataTable<TData, TValue>({
 	data,
 }: DataTableProps<TData, TValue>) {
 	const [rowSelection, setRowSelection] = useState({})
+	const [search, setSearch] = useState('')
 
 	const table = useReactTable({
 		data,
 		columns,
 		state: {
-			rowSelection
+			rowSelection,
+			globalFilter: search
 		},
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
+		getFilteredRowModel: getFilteredRowModel(),
+		getColumnCanGlobalFilter: () => true,
 		getCoreRowModel: getCoreRowModel(),
+		onGlobalFilterChange: setSearch,
 		getPaginationRowModel: getPaginationRowModel()
 	})
 
 	return (
 		<>
-			{table.getSelectedRowModel().rows.length > 0 && (
-				<div className="flex justify-end items-center gap-2 mb-4">
-					<Button variant="secondary">
-						<Trash2Icon />
-						Excluir selecionados
-					</Button>
+			<div className="flex justify-between items-center gap-2 mb-4 w-full">
+				<div>
+					{table.getSelectedRowModel().rows.length == 0 && (
+						<p className="text-sm text-muted-foreground">Nenhum agendamento selecionado</p>
+					)}
+					{table.getSelectedRowModel().rows.length > 0 && (
+						<p className="text-sm text-muted-foreground">{table.getSelectedRowModel().rows.length}{" "} Selecionado(s)</p>
+					)}
 				</div>
-			)}
+				<div className="flex gap-2">
+					{table.getSelectedRowModel().rows.length > 0 && (
+						<>
+							<Button variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/15">
+								<Trash2Icon />
+							</Button>
+						</>
+					)}
+					<div className="w-full">
+						<Input placeholder="Pesquise Pacientes"
+							value={search ?? ""}
+							onChange={(e) => setSearch(e.target.value)}
+						/>
+					</div>
+				</div>
+			</div>
 			<div className="overflow-hidden rounded-md border">
 				<Table>
 					<TableHeader>
