@@ -106,27 +106,38 @@ export function DataTable<TData, TValue>({
 
 	return (
 		<>
-			<div className="flex justify-between items-center gap-2 mb-4 w-full">
+			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 w-full">
 				<div>
-					{table.getSelectedRowModel().rows.length == 0 && (
-						<p className="text-sm text-muted-foreground">Nenhum agendamento selecionado</p>
+					{table.getSelectedRowModel().rows.length === 0 && (
+						<p className="text-sm text-muted-foreground">
+							Nenhum agendamento selecionado
+						</p>
 					)}
+
 					{table.getSelectedRowModel().rows.length > 0 && (
-						<p className="text-sm text-muted-foreground">{table.getSelectedRowModel().rows.length}{" "} Selecionado(s)</p>
+						<p className="text-sm text-muted-foreground">
+							{table.getSelectedRowModel().rows.length} Selecionado(s)
+						</p>
 					)}
 				</div>
-				<div className="flex gap-2">
-					{table.getSelectedRowModel().rows.length > 0 && (
-						<>
-							<Button variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/15">
+
+				<div className="flex items-center gap-2 w-full sm:w-auto">
+					<div className="w-[40px] shrink-0">
+						{table.getSelectedRowModel().rows.length > 0 && (
+							<Button
+								variant="destructive"
+								className="bg-destructive/10 text-destructive hover:bg-destructive/15"
+							>
 								<Trash2Icon />
 							</Button>
-						</>
-					)}
-					<div className="w-full">
-						<Input placeholder="Pesquise Pacientes"
+						)}
+					</div>
+					<div className="w-full sm:w-[320px] md:w-[380px] lg:w-[420px]">
+						<Input
+							placeholder="Pesquise Pacientes"
 							value={search ?? ""}
 							onChange={(e) => setSearch(e.target.value)}
+							className="w-full"
 						/>
 					</div>
 				</div>

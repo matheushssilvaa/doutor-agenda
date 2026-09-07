@@ -14,7 +14,7 @@ import AddDoctorButton from "./_components/Add-doctor-button"
 import { db } from "@/db"
 import { eq } from "drizzle-orm"
 import { doctorsTable } from "@/db/schema"
-import DoctorCard from "./_components/Doctor-card"
+import ListDoctorCard from "./_components/List-doctor-card"
 
 const DoctorPage = async () => {
 	const session = await auth.api.getSession({
@@ -44,9 +44,7 @@ const DoctorPage = async () => {
 					</PageActions>
 				</PageHeader>
 				<PageContent>
-					<div className="grid grid-cols-3 gap-6">
-						{doctors.map(doctor => <DoctorCard key={doctor.id} doctor={doctor} />)}
-					</div>
+					<ListDoctorCard doctors={doctors} />
 				</PageContent>
 			</PageContainer>
 		</>

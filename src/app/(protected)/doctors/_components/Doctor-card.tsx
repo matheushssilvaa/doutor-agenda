@@ -12,6 +12,20 @@ import UpsertDoctorForm from "./Upserts-doctor-form"
 import { getAvailability } from "../helpers/availability"
 import { formatCurrencyInCents } from "@/helpers/currency"
 import { useState } from "react"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger
+} from "@/components/ui/alert-dialog"
+import { useAction } from "next-safe-action/hooks"
+import { deleteDoctor } from "@/app/actions/delete-doctor"
+import { toast } from "sonner"
 
 interface DoctorCardProps {
 	doctor: typeof doctorsTable.$inferSelect
@@ -19,11 +33,28 @@ interface DoctorCardProps {
 
 const DoctorCard = ({ doctor }: DoctorCardProps) => {
 	const [isUpsertDoctorsDialogOpen, setIsUpsertDoctorsDialogOpen] = useState(false)
+	const [isDeleteDoctorsDialogOpen, setIsDeleteDoctorsDialogOpen] = useState(false)
 
 	const doctorInitials = doctor.name
 		.split(" ")
 		.map((name) => name[0])
 		.join("")
+
+	const deleteDoctorAction = useAction(deleteDoctor, {
+		onSuccess: () => {
+			toast.success("Médico deletado com sucesso.")
+		},
+		onError: () => {
+			toast.success("Erro ao deletar o médico.")
+		}
+	})
+
+	const handleDeleteDoctorClick = () => {
+		if (!doctor) {
+			return
+		}
+		deleteDoctorAction.execute({ id: doctor.id })
+	}
 
 	const availability = getAvailability(doctor)
 	return (
@@ -56,12 +87,12 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
 				</Badge>
 			</CardContent>
 			<Separator />
-			<CardFooter>
+			<CardFooter className="flex flex-col gap-2">
 				<Dialog
 					open={isUpsertDoctorsDialogOpen}
 					onOpenChange={setIsUpsertDoctorsDialogOpen}>
 					<DialogTrigger asChild>
-						<Button className="w-full">
+						<Button className="w-full bg-primary/15 text-primary hover:bg-primary/10">
 							Ver detalhes
 						</Button>
 					</DialogTrigger>
@@ -73,6 +104,33 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
 						onSuccess={() => setIsUpsertDoctorsDialogOpen(false)}
 					/>
 				</Dialog>
+
+				<AlertDialog
+					open={isDeleteDoctorsDialogOpen}
+					onOpenChange={setIsDeleteDoctorsDialogOpen}>
+					<AlertDialogTrigger asChild>
+						<Button className="w-full" variant="outline">
+							Excluir
+						</Button>
+					</AlertDialogTrigger >
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>Tem certeza que deseja deletar esse médico?</AlertDialogTitle>
+							<AlertDialogDescription>
+								Essa ação não pode ser revertida. Isso irá deletar o médico e todas as consultas agendadas.
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>
+								Cancelar
+							</AlertDialogCancel>
+							<AlertDialogAction
+								onClick={handleDeleteDoctorClick}>
+								Deletar
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
 			</CardFooter>
 		</Card>
 	)

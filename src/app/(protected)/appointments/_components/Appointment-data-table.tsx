@@ -6,7 +6,6 @@ import {
 	getCoreRowModel,
 	getFilteredRowModel,
 	getPaginationRowModel,
-
 	useReactTable
 } from "@tanstack/react-table"
 import {
@@ -32,7 +31,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Edit2Icon, FilterIcon, Trash2Icon } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type Appointment = typeof appointmentsTable.$inferSelect & {
 	patient: {
@@ -179,35 +177,48 @@ export function DataTable({
 
 	return (
 		<>
-			<div className="flex justify-between items-center gap-2 mb-4 w-full">
+			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 w-full">
 				<div>
-					{table.getSelectedRowModel().rows.length == 0 && (
-						<p className="text-sm text-muted-foreground">Nenhum agendamento selecionado</p>
+					{table.getSelectedRowModel().rows.length === 0 && (
+						<p className="text-sm text-muted-foreground">
+							Nenhum agendamento selecionado
+						</p>
 					)}
+
 					{table.getSelectedRowModel().rows.length > 0 && (
-						<p className="text-sm text-muted-foreground">{table.getSelectedRowModel().rows.length}{" "} Selecionado(s)</p>
+						<p className="text-sm text-muted-foreground">
+							{table.getSelectedRowModel().rows.length} Selecionado(s)
+						</p>
 					)}
 				</div>
-				<div className="flex gap-2">
-					{table.getSelectedRowModel().rows.length > 0 && (
-						<>
-							<Button variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/15">
-								<Trash2Icon />
-							</Button>
+				<div className="flex items-center gap-2 w-full sm:w-auto">
+					<div className="flex gap-2 w-[88px] shrink-0">
+						{table.getSelectedRowModel().rows.length > 0 && (
+							<>
+								<Button
+									variant="destructive"
+									className="bg-destructive/10 text-destructive hover:bg-destructive/15"
+								>
+									<Trash2Icon />
+								</Button>
 
-							<Button variant="secondary">
-								<Edit2Icon />
-							</Button>
-						</>
-					)}
-					<div className="w-full">
-						<Input placeholder="Pesquise por pacientes"
+								<Button variant="secondary">
+									<Edit2Icon />
+								</Button>
+							</>
+						)}
+					</div>
+					<div className="w-full sm:w-[320px] md:w-[380px] lg:w-[420px]">
+						<Input
+							placeholder="Pesquisar..."
 							value={search ?? ""}
 							onChange={(e) => setSearch(e.target.value)}
+							className="w-full"
 						/>
 					</div>
 				</div>
 			</div>
+
 			<div className="overflow-hidden rounded-md border">
 				<Table>
 					<TableHeader>
