@@ -29,8 +29,23 @@ import {
 	SelectValue
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Edit2Icon, FilterIcon, Trash2Icon } from "lucide-react";
+import { Edit2Icon, FilterIcon, Trash2Icon, TrashIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { deleteManyAppointments } from "@/app/actions/delete-many-appointments";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
+import DeleteDialog from "../../_components/delete-dialog";
 
 type Appointment = typeof appointmentsTable.$inferSelect & {
 	patient: {
@@ -175,6 +190,29 @@ export function DataTable({
 		getPaginationRowModel: getPaginationRowModel()
 	})
 
+	const selectedAppointments = table.getSelectedRowModel().rows.map(
+		(row) => row.original
+	)
+
+	const selectedAppointmentsIds = selectedAppointments.map((data) => data.id)
+
+	const deleteManyAppointmentsAction = useAction(deleteManyAppointments, {
+		onSuccess: () => {
+			toast.success("Agendamentos excluídos com sucesso!")
+		},
+		onError: (e) => {
+			console.error(e)
+			toast.error("Ocorreu um erro ao excluir os agendamentos selecionados, tente novamente.")
+		}
+	})
+
+	const handleDeleteAppointmentsClick = () => {
+		if (!appointmentsTable) {
+			return
+		}
+		deleteManyAppointmentsAction.execute(selectedAppointmentsIds)
+	}
+
 	return (
 		<>
 			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 w-full">
@@ -195,13 +233,16 @@ export function DataTable({
 					<div className="flex gap-2 w-[88px] shrink-0">
 						{table.getSelectedRowModel().rows.length > 0 && (
 							<>
-								<Button
-									variant="destructive"
-									className="bg-destructive/10 text-destructive hover:bg-destructive/15"
-								>
-									<Trash2Icon />
-								</Button>
-
+								<DeleteDialog
+									alertTriger={
+										<Button variant="destructive" className="bg-destructive/10 text-destructive hover:bg-destructive/15">
+											<TrashIcon />
+										</Button>
+									}
+									alertDialogTitle="Tem certeza que deseja deletar os agendamentos selecionados?"
+									alertDialogDescription="Essa ação não pode ser revertida. Será necessário cadastrar um novo agendamento se necessário."
+									alertDialogAction={handleDeleteAppointmentsClick}
+								/>
 								<Button variant="secondary">
 									<Edit2Icon />
 								</Button>

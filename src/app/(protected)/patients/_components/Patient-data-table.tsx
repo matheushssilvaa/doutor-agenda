@@ -19,74 +19,89 @@ import {
 } from "@/components/ui/table";
 import DialogActionsTable from "./Dialog-actions-table";
 import { patientsTable } from "@/db/schema";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Edit2Icon, Trash2Icon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useAction } from "next-safe-action/hooks";
+import { toast } from "sonner";
+import { deleteManyPatients } from "@/app/actions/delete-many-patients";
+import DeleteDialog from "../../_components/delete-dialog";
 
 type Patient = typeof patientsTable.$inferSelect;
 
-export const columns: ColumnDef<Patient>[] = [
-	{
-		id: "select",
-		header: ({ table }) => (
-			<Checkbox
-				checked={
-					table.getIsAllPageRowsSelected() ||
-					(table.getIsSomePageRowsSelected() && "indeterminate")
-				}
-				onCheckedChange={(value) =>
-					table.toggleAllPageRowsSelected(!!value)
-				}
-				aria-label="Selecionar todos"
-			/>
-		),
-		cell: ({ row }) => (
-			<Checkbox
-				checked={row.getIsSelected()}
-				onCheckedChange={(value) => row.toggleSelected(!!value)}
-				aria-label="Selecionar linha"
-			/>
-		),
-		enableSorting: false,
-		enableHiding: false,
-	},
-	{
-		accessorKey: "id",
-		header: "Identificador"
-	},
-	{
-		accessorKey: "name",
-		header: "Nome"
-	},
-	{
-		accessorKey: "email",
-		header: "Email"
-	},
-	{
-		accessorKey: "phoneNumber",
-		header: "Telefone"
-	},
-	{
-		accessorKey: "action",
-		header: "Ações",
-		cell: ({ row }) => <DialogActionsTable patient={row.original as Patient} />
-	},
-]
-
-interface DataTableProps<TData, TValue> {
-	columns: ColumnDef<TData, TValue>[]
-	data: TData[]
+interface AppointmentsColumnsOptions {
+	patients: (typeof patientsTable.$inferSelect)[]
 }
 
-export function DataTable<TData, TValue>({
-	columns,
+const getPatientsColumns = ({
+	patients
+}: AppointmentsColumnsOptions): ColumnDef<Patient>[] => [
+		{
+			id: "select",
+			header: ({ table }) => (
+				<Checkbox
+					checked={
+						table.getIsAllPageRowsSelected() ||
+						(table.getIsSomePageRowsSelected() && "indeterminate")
+					}
+					onCheckedChange={(value) =>
+						table.toggleAllPageRowsSelected(!!value)
+					}
+					aria-label="Selecionar todos"
+				/>
+			),
+			cell: ({ row }) => (
+				<Checkbox
+					checked={row.getIsSelected()}
+					onCheckedChange={(value) => row.toggleSelected(!!value)}
+					aria-label="Selecionar linha"
+				/>
+			),
+			enableSorting: false,
+			enableHiding: false,
+		},
+		{
+			id: "patientId",
+			accessorKey: "id",
+			header: "Identificador"
+		},
+		{
+			accessorKey: "name",
+			header: "Nome"
+		},
+		{
+			accessorKey: "email",
+			header: "Email"
+		},
+		{
+			accessorKey: "phoneNumber",
+			header: "Telefone"
+		},
+		{
+			accessorKey: "action",
+			header: "Ações",
+			cell: ({ row }) => <DialogActionsTable patient={row.original as Patient} />
+		},
+	]
+
+interface DataTableProps extends AppointmentsColumnsOptions {
+	data: Patient[]
+}
+
+export function DataTable({
 	data,
-}: DataTableProps<TData, TValue>) {
+	patients
+}: DataTableProps) {
 	const [rowSelection, setRowSelection] = useState({})
 	const [search, setSearch] = useState('')
+
+	const columns = useMemo(
+		() => getPatientsColumns({ patients }),
+		[patients]
+	)
 
 	const table = useReactTable({
 		data,
@@ -103,6 +118,31 @@ export function DataTable<TData, TValue>({
 		onGlobalFilterChange: setSearch,
 		getPaginationRowModel: getPaginationRowModel()
 	})
+
+	const selectedPatients = table.getSelectedRowModel().rows.map(
+		(row) => row.original
+	)
+
+	const selectedPatientsIds = selectedPatients.map((data) => data.id)
+
+	console.log(selectedPatientsIds)
+
+	const deleteManyAppointmentsAction = useAction(deleteManyPatients, {
+		onSuccess: () => {
+			toast.success("Pacientes excluídos com sucesso!")
+		},
+		onError: (e) => {
+			console.error(e)
+			toast.error("Ocorreu um erro ao excluir os pacientes selecionados, tente novamente.")
+		}
+	})
+
+	const handleDeletePatientsClick = () => {
+		if (!patientsTable) {
+			return
+		}
+		deleteManyAppointmentsAction.execute(selectedPatientsIds)
+	}
 
 	return (
 		<>
@@ -124,12 +164,19 @@ export function DataTable<TData, TValue>({
 				<div className="flex items-center gap-2 w-full sm:w-auto">
 					<div className="w-[40px] shrink-0">
 						{table.getSelectedRowModel().rows.length > 0 && (
-							<Button
-								variant="destructive"
-								className="bg-destructive/10 text-destructive hover:bg-destructive/15"
-							>
-								<Trash2Icon />
-							</Button>
+							<DeleteDialog
+								alertTriger={
+									<Button
+										variant="destructive"
+										className="bg-destructive/10 text-destructive hover:bg-destructive/15"
+									>
+										<Trash2Icon />
+									</Button>
+								}
+								alertDialogTitle="Tem certeza que deseja deletar os pacientes selecionados?"
+								alertDialogDescription="Essa ação não pode ser revertida. Será necessário cadastrar um novo paciente se necessário."
+								alertDialogAction={handleDeletePatientsClick}
+							/>
 						)}
 					</div>
 					<div className="w-full sm:w-[320px] md:w-[380px] lg:w-[420px]">
