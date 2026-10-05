@@ -1,3 +1,7 @@
+import { eq } from "drizzle-orm"
+import { headers } from "next/headers"
+import { redirect } from "next/navigation"
+
 import {
 	PageActions,
 	PageContainer,
@@ -7,12 +11,10 @@ import {
 	PageHeaderContent,
 	PageTitle
 } from "@/components/ui/page-container"
-import { auth } from "@/lib/auth"
-import { headers } from "next/headers"
-import { redirect } from "next/navigation"
 import { db } from "@/db"
-import { eq } from "drizzle-orm"
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema"
+import { auth } from "@/lib/auth"
+
 import AddAppointmentButton from "./_components/Add-appointment-button"
 import { DataTable } from "./_components/Appointment-data-table"
 

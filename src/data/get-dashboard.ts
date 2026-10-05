@@ -1,8 +1,20 @@
 import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
 import { and, count, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
 
 import { db } from "@/db";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+// O servidor (ex.: Vercel) roda em UTC; os "dias" do dashboard seguem o horário de Brasília.
+const TIME_ZONE = "America/Sao_Paulo";
+
+// As datas são gravadas em UTC (timestamp sem fuso), então convertemos para o dia local.
+const appointmentLocalDate = () =>
+	sql<string>`DATE((${appointmentsTable.date} AT TIME ZONE 'UTC') AT TIME ZONE ${sql.raw(`'${TIME_ZONE}'`)})`;
 
 interface Params {
 	from: string;
@@ -17,11 +29,15 @@ interface Params {
 }
 
 export const getDashboard = async ({ from, to, session }: Params) => {
-	const chartStartDate = dayjs().subtract(10, "days").startOf("day").toDate();
-	const chartEndDate = dayjs().add(10, "days").endOf("day").toDate();
+	const now = dayjs().tz(TIME_ZONE);
+	const chartStartDate = now.subtract(10, "days").startOf("day").toDate();
+	const chartEndDate = now.add(10, "days").endOf("day").toDate();
 
-	const startOfToday = dayjs().startOf("day").toDate();
-	const endOfToday = dayjs().endOf("day").toDate();
+	const startOfToday = now.startOf("day").toDate();
+	const endOfToday = now.endOf("day").toDate();
+
+	const fromDate = dayjs.tz(from, TIME_ZONE).startOf("day").toDate();
+	const toDate = dayjs.tz(to, TIME_ZONE).endOf("day").toDate();
 
 	const [
 		[totalRevenue],
@@ -41,8 +57,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
 			.where(
 				and(
 					eq(appointmentsTable.clinicId, session.user.clinic.id),
-					gte(appointmentsTable.date, new Date(from)),
-					lte(appointmentsTable.date, new Date(to)),
+					gte(appointmentsTable.date, fromDate),
+					lte(appointmentsTable.date, toDate),
 				),
 			),
 		db
@@ -53,8 +69,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
 			.where(
 				and(
 					eq(appointmentsTable.clinicId, session.user.clinic.id),
-					gte(appointmentsTable.date, new Date(from)),
-					lte(appointmentsTable.date, new Date(to)),
+					gte(appointmentsTable.date, fromDate),
+					lte(appointmentsTable.date, toDate),
 				),
 			),
 		db
@@ -82,8 +98,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
 				appointmentsTable,
 				and(
 					eq(appointmentsTable.doctorId, doctorsTable.id),
-					gte(appointmentsTable.date, new Date(from)),
-					lte(appointmentsTable.date, new Date(to)),
+					gte(appointmentsTable.date, fromDate),
+					lte(appointmentsTable.date, toDate),
 				),
 			)
 			.where(eq(doctorsTable.clinicId, session.user.clinic.id))
@@ -100,8 +116,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
 			.where(
 				and(
 					eq(appointmentsTable.clinicId, session.user.clinic.id),
-					gte(appointmentsTable.date, new Date(from)),
-					lte(appointmentsTable.date, new Date(to)),
+					gte(appointmentsTable.date, fromDate),
+					lte(appointmentsTable.date, toDate),
 				),
 			)
 			.groupBy(doctorsTable.specialty)
@@ -119,7 +135,7 @@ export const getDashboard = async ({ from, to, session }: Params) => {
 		}),
 		db
 			.select({
-				date: sql<string>`DATE(${appointmentsTable.date})`.as("date"),
+				date: appointmentLocalDate().as("date"),
 				appointments: count(appointmentsTable.id),
 				revenue:
 					sql<number>`COALESCE(SUM(${appointmentsTable.appointmentInCents}), 0)`.as(
@@ -134,8 +150,8 @@ export const getDashboard = async ({ from, to, session }: Params) => {
 					lte(appointmentsTable.date, chartEndDate),
 				),
 			)
-			.groupBy(sql`DATE(${appointmentsTable.date})`)
-			.orderBy(sql`DATE(${appointmentsTable.date})`),
+			.groupBy(appointmentLocalDate())
+			.orderBy(appointmentLocalDate()),
 	]);
 	return {
 		totalRevenue,

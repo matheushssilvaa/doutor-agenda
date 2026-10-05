@@ -1,13 +1,15 @@
 "use server"
 
+import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+
 import { db } from "@/db";
-import { upsertPatientSchema } from "./schema";
 import { patientsTable } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { actionClient } from "@/lib/next-safe-action";
-import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
+
+import { upsertPatientSchema } from "./schema";
 
 export const upsertPatient = actionClient.schema(upsertPatientSchema)
 	.action(async ({ parsedInput }) => {
@@ -32,7 +34,10 @@ export const upsertPatient = actionClient.schema(upsertPatientSchema)
 						...parsedInput,
 						updatedAt: new Date(),
 					})
-					.where(eq(patientsTable.id, parsedInput.id))
+					.where(and(
+						eq(patientsTable.id, parsedInput.id),
+						eq(patientsTable.clinicId, session.user.clinic.id)
+					))
 			} else {
 				await db
 					.insert(patientsTable)
@@ -45,9 +50,10 @@ export const upsertPatient = actionClient.schema(upsertPatientSchema)
 
 			revalidatePath("/patients")
 			return { success: true }
-		} catch (error: any) {
+		} catch (error) {
 			// Captura erro de email duplicado
-			if (error.code === '23505' || error.message?.includes('email')) {
+			const dbError = error as { code?: string; message?: string }
+			if (dbError.code === '23505' || dbError.message?.includes('email')) {
 				throw new Error("Este email está sendo usado, tente novamente.")
 			}
 			throw error

@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import { eq } from "drizzle-orm";
 import { Calendar } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -13,18 +14,17 @@ import {
 	PageHeaderContent,
 	PageTitle,
 } from "@/components/ui/page-container";
+import { getDashboard } from "@/data/get-dashboard";
 import { db } from "@/db";
 import { doctorsTable, patientsTable } from "@/db/schema";
-import { getDashboard } from "@/data/get-dashboard";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
 
-import AppointmentCharts from "./_components/appointments-chart"
-import { DatePicker } from "./_components/data-picker";
-import StatsCards from "./_components/stats-cards"
-import TopDoctors from "./_components/top-doctor";
-import TopSpecialties from "./_components/top-specialities";
 import { DataTable } from "../appointments/_components/Appointment-data-table";
+import AppointmentsChart from "./_components/Appointments-chart";
+import { DatePicker } from "./_components/Data-picker";
+import StatsCards from "./_components/Stats-cards";
+import TopDoctors from "./_components/Top-doctor";
+import TopSpecialties from "./_components/Top-specialities";
 
 interface DashboardPageProps {
 	searchParams: Promise<{
@@ -100,11 +100,11 @@ const DashboardPage = async ({ searchParams }: DashboardPageProps) => {
 					totalPatients={totalPatients.total}
 					totalDoctors={totalDoctors.total}
 				/>
-				<div className="grid grid-cols-[2.25fr_1fr] gap-4">
-					<AppointmentCharts dailyAppointmentsData={dailyAppointmentsData} />
+				<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2.25fr)_minmax(0,1fr)]">
+					<AppointmentsChart dailyAppointmentsData={dailyAppointmentsData} />
 					<TopDoctors doctors={topDoctors} />
 				</div>
-				<div className="grid grid-cols-[2.25fr_1fr] gap-4">
+				<div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2.25fr)_minmax(0,1fr)]">
 					<Card>
 						<CardHeader>
 							<div className="flex items-center gap-3">

@@ -1,12 +1,14 @@
 "use client"
 
+import { Plus } from "lucide-react"
+import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Dialog } from "@/components/ui/dialog"
 import { DialogTrigger } from "@/components/ui/dialog"
-import { Plus } from "lucide-react"
-import UpsertAppointmentsForm from "./Upsert-appointments-form"
-import { useState } from "react"
 import { doctorsTable, patientsTable } from "@/db/schema"
+
+import UpsertAppointmentsForm from "./Upsert-appointments-form"
 
 interface AddAppointmentProps {
 	patients: (typeof patientsTable.$inferSelect)[],

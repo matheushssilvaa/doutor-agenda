@@ -1,26 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue
-} from "@/components/ui/select"
-import { SelectItem } from "@/components/ui/select"
-import { medicalSpecialties } from "../_constantes"
-import { NumericFormat } from "react-number-format"
+import { TrashIcon } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
-import { upsertDoctor } from "@/app/actions/upsert-doctor"
+import { useForm } from "react-hook-form"
+import { NumericFormat } from "react-number-format"
 import { toast } from "sonner"
-import { doctorsTable } from "@/db/schema"
+import { z } from "zod"
+
+import { deleteDoctor } from "@/app/actions/delete-doctor"
+import { upsertDoctor } from "@/app/actions/upsert-doctor"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -32,8 +19,23 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger
 } from "@/components/ui/alert-dialog"
-import { TrashIcon } from "lucide-react"
-import { deleteDoctor } from "@/app/actions/delete-doctor"
+import { Button } from "@/components/ui/button"
+import { DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue
+} from "@/components/ui/select"
+import { SelectItem } from "@/components/ui/select"
+import { doctorsTable } from "@/db/schema"
+
+import { medicalSpecialties } from "../_constantes"
 
 const formSchema = z.object({
 	name: z.string().trim().min(1, { message: "O nome é obrigatório" }),
@@ -76,8 +78,8 @@ const UpsertDoctorForm = ({ onSuccess, doctor }: upsertDoctorProps) => {
 
 	const upsertDoctorAction = useAction(upsertDoctor, {
 		onSuccess: () => {
-			toast.success("Médico adicionado com sucesso!"),
-				onSuccess?.()
+			toast.success("Médico adicionado com sucesso!")
+			onSuccess?.()
 		},
 		onError: (e) => {
 			console.error(e)
@@ -113,7 +115,7 @@ const UpsertDoctorForm = ({ onSuccess, doctor }: upsertDoctorProps) => {
 	}
 
 	return (
-		<DialogContent>
+		<DialogContent className="max-h-[90vh] overflow-y-auto">
 			<DialogHeader>
 				<DialogTitle>{doctor ? doctor.name : "Adicionar médico"}</DialogTitle>
 				<DialogDescription>Insira os dados do médico abaixo para criar um novo médico.</DialogDescription>

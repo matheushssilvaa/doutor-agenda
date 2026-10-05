@@ -2,9 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
+import { format, startOfDay } from "date-fns"
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import { CalendarIcon } from "lucide-react";
 import { useAction } from "next-safe-action/hooks";
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
@@ -12,11 +14,10 @@ import { NumericFormat } from "react-number-format";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { format, startOfDay } from "date-fns"
-
-import { upsertAppointment } from "@/app/actions/upsert-appointment";
 import { getAvailableTimes } from "@/app/actions/get-available-times";
+import { upsertAppointment } from "@/app/actions/upsert-appointment";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
 	DialogContent,
 	DialogDescription,
@@ -33,6 +34,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
 	Select,
 	SelectContent,
@@ -41,9 +43,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
-import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 
 dayjs.extend(utc);
@@ -211,7 +210,7 @@ const UpsertAppointmentForm = ({
 	const isDateTimeEnabled = selectedPatientId && selectedDoctorId;
 
 	return (
-		<DialogContent className="sm:max-w-[500px]">
+		<DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
 			<DialogHeader>
 				<DialogTitle>
 					{appointment ? "Editar agendamento" : "Novo agendamento"}

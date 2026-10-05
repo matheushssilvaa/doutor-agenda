@@ -1,16 +1,17 @@
 "use client"
 
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Loader2 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useForm } from "react-hook-form"
+import { toast } from "sonner"
+import z from "zod"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth-client"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { Loader2 } from "lucide-react"
-import z from "zod"
-import { useRouter } from "next/navigation"
-import { toast } from "sonner"
 
 const registerSchema = z.object({
 	name: z.string().trim().min(3, { message: "Nome é obrigatório" }),

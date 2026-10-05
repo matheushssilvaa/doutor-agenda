@@ -1,5 +1,10 @@
 "use client"
 
+import { Edit2Icon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
+import { useAction } from "next-safe-action/hooks";
+import { useState } from "react";
+import { toast } from "sonner";
+
 import { deleteAppointments } from "@/app/actions/delete-appointment";
 import {
 	AlertDialog,
@@ -21,10 +26,7 @@ import {
 	DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { appointmentsTable, doctorsTable, patientsTable } from "@/db/schema";
-import { Edit2Icon, MoreHorizontalIcon, Trash2Icon } from "lucide-react";
-import { useAction } from "next-safe-action/hooks";
-import { useState } from "react";
-import { toast } from "sonner";
+
 import UpsertAppointmentForm from "./Upsert-appointments-form";
 
 interface ActionsTableAppointmentProps {

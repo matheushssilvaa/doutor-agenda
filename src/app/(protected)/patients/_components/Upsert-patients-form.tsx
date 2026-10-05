@@ -1,32 +1,12 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-	DialogContent,
-	DialogDescription,
-	DialogTitle
-} from "@/components/ui/dialog"
-import { z } from "zod"
-import { useForm } from "react-hook-form"
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage
-} from "@/components/ui/form"
-import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import {
-	Select,
-	SelectContent,
-	SelectTrigger,
-	SelectValue
-} from "@/components/ui/select"
-import { SelectItem } from "@/components/ui/select"
+import { TrashIcon } from "lucide-react"
 import { useAction } from "next-safe-action/hooks"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
-import { patientsTable } from "@/db/schema"
+import { z } from "zod"
+
+import { deletePatient } from "@/app/actions/delete-patient"
+import { upsertPatient } from "@/app/actions/upsert-patient"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -38,13 +18,33 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger
 } from "@/components/ui/alert-dialog"
-import { TrashIcon } from "lucide-react"
-import { upsertPatient } from "@/app/actions/upsert-patient"
-import { deletePatient } from "@/app/actions/delete-patient"
+import { Button } from "@/components/ui/button"
+import {
+	DialogContent,
+	DialogDescription,
+	DialogTitle
+} from "@/components/ui/dialog"
+import { DialogFooter, DialogHeader } from "@/components/ui/dialog"
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import {
+	Select,
+	SelectContent,
+	SelectTrigger,
+	SelectValue
+} from "@/components/ui/select"
+import { SelectItem } from "@/components/ui/select"
+import { patientsTable } from "@/db/schema"
 
 const formSchema = z.object({
 	id: z.string().uuid().optional(),
-	clinicId: z.string().uuid().optional(),
 	name: z.string().trim().min(1, { message: "O nome é obrigatório" }),
 	email: z.string().email({ message: "Insira um email válido" }).trim().min(1),
 	phoneNumber: z.string().min(1, { message: "O Telefone é obrigatório" }),
@@ -74,25 +74,8 @@ const UpsertPatientsForm = ({ onSuccess, patient }: upsertPatientsProps) => {
 			onSuccess?.()
 		},
 		onError: ({ error }) => {
-			let errorMessage = ""
-
-			if (typeof error.serverError === 'string') {
-				errorMessage = error.serverError
-			} else if (error.serverError && typeof error.serverError === 'object') {
-				errorMessage = error.serverError.message || JSON.stringify(error.serverError)
-			}
-
-			if (!errorMessage && error.fetchError) {
-				errorMessage = error.fetchError
-			}
-
-			console.log("Mensagem extraída:", errorMessage)
-
-			if (errorMessage) {
-				toast.error(errorMessage)
-			} else {
-				toast.error("Ocorreu um erro. Tente novamente.")
-			}
+			// serverError já vem como string (ver handleServerError em lib/next-safe-action)
+			toast.error(error.serverError || "Ocorreu um erro. Tente novamente.")
 		}
 	})
 
@@ -116,12 +99,12 @@ const UpsertPatientsForm = ({ onSuccess, patient }: upsertPatientsProps) => {
 	const onSubmit = (values: z.infer<typeof formSchema>) => {
 		upsertPatientAction.execute({
 			...values,
-			clinicId: patient?.clinicId,
+			id: patient?.id,
 		})
 	}
 
 	return (
-		<DialogContent>
+		<DialogContent className="max-h-[90vh] overflow-y-auto">
 			<DialogHeader>
 				<DialogTitle>{patient ? patient.name : "Adicionar paciente"}</DialogTitle>
 				<DialogDescription>Insira os dados do paciente abaixo para criar um novo paciente.</DialogDescription>

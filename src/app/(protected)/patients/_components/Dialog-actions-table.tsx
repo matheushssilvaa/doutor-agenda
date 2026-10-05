@@ -1,12 +1,9 @@
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import { Edit2Icon, EyeIcon, MoreHorizontalIcon, Trash2Icon } from "lucide-react"
-import UpsertPatientsForm from "./Upsert-patients-form"
-import { patientsTable } from "@/db/schema"
-import { useState } from "react"
 import { useAction } from "next-safe-action/hooks"
-import { deleteAppointments } from "@/app/actions/delete-appointment"
+import { useState } from "react"
 import { toast } from "sonner"
+
+import { deleteAppointments } from "@/app/actions/delete-appointment"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -17,6 +14,8 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -24,6 +23,9 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
+import { patientsTable } from "@/db/schema"
+
+import UpsertPatientsForm from "./Upsert-patients-form"
 
 type Patient = typeof patientsTable.$inferSelect;
 

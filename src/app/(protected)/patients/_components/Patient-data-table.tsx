@@ -8,6 +8,16 @@ import {
 	getPaginationRowModel,
 	useReactTable
 } from "@tanstack/react-table"
+import { SearchX, Trash2Icon } from "lucide-react";
+import { useAction } from "next-safe-action/hooks";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+
+import { deleteManyPatients } from "@/app/actions/delete-many-patients";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -17,18 +27,12 @@ import {
 	TableHeader,
 	TableRow
 } from "@/components/ui/table";
-import DialogActionsTable from "./Dialog-actions-table";
 import { patientsTable } from "@/db/schema";
-import { useMemo, useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2Icon } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useAction } from "next-safe-action/hooks";
-import { toast } from "sonner";
-import { deleteManyPatients } from "@/app/actions/delete-many-patients";
-import DeleteDialog from "../../_components/delete-dialog";
+
+import DeleteDialog from "../../_components/Delete-dialog";
+import EmptyStateData from "../../_components/Empt-state-data";
+import AddPatientButton from "./Add-patient-button";
+import DialogActionsTable from "./Dialog-actions-table";
 
 type Patient = typeof patientsTable.$inferSelect;
 
@@ -36,7 +40,8 @@ interface AppointmentsColumnsOptions {
 	patients: (typeof patientsTable.$inferSelect)[]
 }
 
-const getPatientsColumns = ({
+export const getPatientsColumns = ({
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	patients
 }: AppointmentsColumnsOptions): ColumnDef<Patient>[] => [
 		{
@@ -62,11 +67,6 @@ const getPatientsColumns = ({
 			),
 			enableSorting: false,
 			enableHiding: false,
-		},
-		{
-			id: "patientId",
-			accessorKey: "id",
-			header: "Identificador"
 		},
 		{
 			accessorKey: "name",
@@ -125,8 +125,6 @@ export function DataTable({
 
 	const selectedPatientsIds = selectedPatients.map((data) => data.id)
 
-	console.log(selectedPatientsIds)
-
 	const deleteManyAppointmentsAction = useAction(deleteManyPatients, {
 		onSuccess: () => {
 			toast.success("Pacientes excluídos com sucesso!")
@@ -144,13 +142,24 @@ export function DataTable({
 		deleteManyAppointmentsAction.execute(selectedPatientsIds)
 	}
 
+	if (data.length === 0) {
+		return (
+			<EmptyStateData
+				title="Nenhum paciente cadastrado"
+				description="Adicione o primeiro paciente da sua clínica clicando no botão abaixo"
+				action="Adicionar paciente"
+				actionComponent={<AddPatientButton />}
+			/>
+		)
+	}
+
 	return (
 		<>
 			<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 w-full">
 				<div>
 					{table.getSelectedRowModel().rows.length === 0 && (
 						<p className="text-sm text-muted-foreground">
-							Nenhum agendamento selecionado
+							Nenhum paciente selecionado
 						</p>
 					)}
 
@@ -189,92 +198,106 @@ export function DataTable({
 					</div>
 				</div>
 			</div>
-			<div className="overflow-hidden rounded-md border">
-				<Table>
-					<TableHeader>
-						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead key={header.id}>
-											{header.isPlaceholder
-												? null
-												: flexRender(
-													header.column.columnDef.header,
-													header.getContext()
-												)}
-										</TableHead>
-									)
-								})}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row) => (
-								<TableRow
-									key={row.id}
-									data-state={row.getIsSelected() && "selected"} >
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id}>
-											{flexRender(cell.column.columnDef.cell, cell.getContext())}
-										</TableCell>
-									))}
+			{table.getFilteredRowModel().rows.length === 0 ? (
+				<EmptyStateData
+					title="Nenhum paciente encontrado"
+					description={`Não encontramos pacientes para "${search}". Verifique o termo pesquisado ou limpe a pesquisa.`}
+					action="Limpar pesquisa"
+					actionComponent={
+						<Button variant="secondary" onClick={() => setSearch("")}>
+							<SearchX />
+							Limpar pesquisa
+						</Button>
+					}
+				/>
+			) : (
+				<div className="overflow-hidden rounded-md border">
+					<Table>
+						<TableHeader>
+							{table.getHeaderGroups().map((headerGroup) => (
+								<TableRow key={headerGroup.id}>
+									{headerGroup.headers.map((header) => {
+										return (
+											<TableHead key={header.id}>
+												{header.isPlaceholder
+													? null
+													: flexRender(
+														header.column.columnDef.header,
+														header.getContext()
+													)}
+											</TableHead>
+										)
+									})}
 								</TableRow>
-							))
-						) : (
+							))}
+						</TableHeader>
+						<TableBody>
+							{table.getRowModel().rows?.length ? (
+								table.getRowModel().rows.map((row) => (
+									<TableRow
+										key={row.id}
+										data-state={row.getIsSelected() && "selected"} >
+										{row.getVisibleCells().map((cell) => (
+											<TableCell key={cell.id}>
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</TableCell>
+										))}
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={columns.length} className="h-24 text-center">
+										Nenhum dado encontrado.
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+						<TableFooter>
 							<TableRow>
-								<TableCell colSpan={columns.length} className="h-24 text-center">
-									Nenhum dado encontrado.
+								<TableCell colSpan={columns.length}>
+									<div className="flex items-center justify-end gap-2">
+										<Select
+											value={`${table.getState().pagination.pageSize}`}
+											onValueChange={(value) => {
+												table.setPageSize(Number(value))
+											}}
+										>
+											<SelectTrigger className="w-[100px]">
+												<SelectValue />
+											</SelectTrigger>
+
+											<SelectContent>
+												<SelectItem value="10">10</SelectItem>
+												<SelectItem value="20">20</SelectItem>
+												<SelectItem value="50">50</SelectItem>
+												<SelectItem value="100">100</SelectItem>
+											</SelectContent>
+										</Select>
+
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => table.previousPage()}
+											disabled={!table.getCanPreviousPage()}
+										>
+											Anterior
+										</Button>
+
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => table.nextPage()}
+											disabled={!table.getCanNextPage()}
+										>
+											Próxima
+										</Button>
+									</div>
 								</TableCell>
 							</TableRow>
-						)}
-					</TableBody>
-					<TableFooter>
-						<TableRow>
-							<TableCell colSpan={columns.length}>
-								<div className="flex items-center justify-end gap-2">
-									<Select
-										value={`${table.getState().pagination.pageSize}`}
-										onValueChange={(value) => {
-											table.setPageSize(Number(value))
-										}}
-									>
-										<SelectTrigger className="w-[100px]">
-											<SelectValue />
-										</SelectTrigger>
-
-										<SelectContent>
-											<SelectItem value="10">10</SelectItem>
-											<SelectItem value="20">20</SelectItem>
-											<SelectItem value="50">50</SelectItem>
-											<SelectItem value="100">100</SelectItem>
-										</SelectContent>
-									</Select>
-
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => table.previousPage()}
-										disabled={!table.getCanPreviousPage()}
-									>
-										Anterior
-									</Button>
-
-									<Button
-										variant="outline"
-										size="sm"
-										onClick={() => table.nextPage()}
-										disabled={!table.getCanNextPage()}
-									>
-										Próxima
-									</Button>
-								</div>
-							</TableCell>
-						</TableRow>
-					</TableFooter>
-				</Table>
-			</div>
+						</TableFooter>
+					</Table>
+				</div>
+			)}
 		</>
 	)
 }

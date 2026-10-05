@@ -1,13 +1,12 @@
-import { Button } from "@/components/ui/button"
+import { DialogTitle } from "@radix-ui/react-dialog"
+
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
 	DialogDescription,
-	DialogFooter,
 	DialogHeader
 } from "@/components/ui/dialog"
-import { DialogTitle } from "@radix-ui/react-dialog"
+
 import ClinicForm from "./_components/form"
 
 const ClinicFormPage = () => {

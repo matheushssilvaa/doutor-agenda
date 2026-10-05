@@ -1,14 +1,19 @@
 "use client"
 
+import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 import {
 	CalendarDays,
+	GemIcon,
 	LayoutDashboard,
 	LogOut,
 	Stethoscope,
-	UsersRound,
-	GemIcon
-} from "lucide-react"
+	UsersRound} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import {
 	Sidebar,
 	SidebarContent,
@@ -20,14 +25,9 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	useSidebar,
 } from "@/components/ui/sidebar"
-import Link from "next/link"
-import Image from "next/image"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
-import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 import { authClient } from "@/lib/auth-client"
-import { usePathname, useRouter } from "next/navigation"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 const items = [
 	{
@@ -61,6 +61,7 @@ const AppSidebar = () => {
 	const router = useRouter()
 	const session = authClient.useSession()
 	const pathName = usePathname()
+	const { isMobile, setOpenMobile } = useSidebar()
 
 	const handleSignOut = async () => {
 		await authClient.signOut({
@@ -78,7 +79,7 @@ const AppSidebar = () => {
 	return (
 		<Sidebar>
 			<SidebarHeader className="p-4 border-b">
-				<Image src="/logo.svg" alt="Dr. Agenda" width={136} height={8} />
+				<Image src="/Logo.svg" alt="Dr. Agenda" width={136} height={8} />
 			</SidebarHeader>
 			<SidebarContent>
 				<SidebarGroup>
@@ -88,7 +89,9 @@ const AppSidebar = () => {
 							{items.map((item) => (
 								<SidebarMenuItem key={item.title}>
 									<SidebarMenuButton asChild isActive={pathName == item.url}>
-										<Link href={item.url}>
+										<Link
+											href={item.url}
+											onClick={() => isMobile && setOpenMobile(false)}>
 											<item.icon />
 											<span>{item.title}</span>
 										</Link>

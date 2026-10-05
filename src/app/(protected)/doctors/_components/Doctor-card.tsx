@@ -1,17 +1,11 @@
 "use client"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Dialog, DialogTrigger } from "@/components/ui/dialog"
-import { Separator } from "@/components/ui/separator"
-import { doctorsTable } from "@/db/schema"
 import { Calendar1Icon, ClockIcon, DollarSignIcon } from "lucide-react"
-import UpsertDoctorForm from "./Upserts-doctor-form"
-import { getAvailability } from "../helpers/availability"
-import { formatCurrencyInCents } from "@/helpers/currency"
+import { useAction } from "next-safe-action/hooks"
 import { useState } from "react"
+import { toast } from "sonner"
+
+import { deleteDoctor } from "@/app/actions/delete-doctor"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -23,9 +17,17 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger
 } from "@/components/ui/alert-dialog"
-import { useAction } from "next-safe-action/hooks"
-import { deleteDoctor } from "@/app/actions/delete-doctor"
-import { toast } from "sonner"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Dialog, DialogTrigger } from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
+import { doctorsTable } from "@/db/schema"
+import { formatCurrencyInCents } from "@/helpers/currency"
+
+import { getAvailability } from "../helpers/availability"
+import UpsertDoctorForm from "./Upserts-doctor-form"
 
 interface DoctorCardProps {
 	doctor: typeof doctorsTable.$inferSelect
@@ -60,28 +62,28 @@ const DoctorCard = ({ doctor }: DoctorCardProps) => {
 	return (
 		<Card>
 			<CardHeader>
-				<div className="flex items-center gap-2">
-					<Avatar>
+				<div className="flex min-w-0 items-center gap-2">
+					<Avatar className="shrink-0">
 						<AvatarFallback>{doctorInitials}</AvatarFallback>
 					</Avatar>
-					<div>
-						<h3 className="text-sm font-medium">{doctor.name}</h3>
-						<p className="text-sm text-muted-foreground">{doctor.specialty}</p>
+					<div className="min-w-0">
+						<h3 className="truncate text-sm font-medium">{doctor.name}</h3>
+						<p className="truncate text-sm text-muted-foreground">{doctor.specialty}</p>
 					</div>
 				</div>
 			</CardHeader>
 			<Separator />
 			<CardContent className="flex flex-col gap-2">
-				<Badge variant="outline">
+				<Badge variant="outline" className="max-w-full whitespace-normal">
 					<Calendar1Icon className="mr-1" />
 					{availability.from.format("dddd")} - {availability.to.format("dddd")}
 				</Badge>
-				<Badge variant="outline">
+				<Badge variant="outline" className="max-w-full whitespace-normal">
 					<ClockIcon className="mr-1" />
 					{availability.from.format("HH:mm")} as {" "}
 					{availability.to.format("HH:mm")}
 				</Badge>
-				<Badge variant="outline">
+				<Badge variant="outline" className="max-w-full whitespace-normal">
 					<DollarSignIcon className="mr-1" />
 					{formatCurrencyInCents(doctor.appointmentPriceInCents)}
 				</Badge>

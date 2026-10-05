@@ -1,13 +1,14 @@
 "use server"
 
-import { db } from "@/db";
-import { patientsTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { actionClient } from "@/lib/next-safe-action";
 import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import z from "zod";
+
+import { db } from "@/db";
+import { patientsTable } from "@/db/schema";
+import { auth } from "@/lib/auth";
+import { actionClient } from "@/lib/next-safe-action";
 
 export const deleteManyPatients = actionClient
 	.schema(z.array(z.string().uuid()).min(1))

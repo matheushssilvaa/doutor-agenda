@@ -37,7 +37,10 @@ export const getAvailableTimes = actionClient
 			throw new Error("Clínica não encontrada");
 		}
 		const doctor = await db.query.doctorsTable.findFirst({
-			where: eq(doctorsTable.id, parsedInput.doctorId),
+			where: and(
+				eq(doctorsTable.id, parsedInput.doctorId),
+				eq(doctorsTable.clinicId, session.user.clinic.id),
+			),
 		});
 		if (!doctor) {
 			throw new Error("Médico não encontrado");
@@ -70,29 +73,18 @@ export const getAvailableTimes = actionClient
 
 		const timeSlots = generateTimeSlots();
 
-		const doctorAvailableFrom = dayjs()
-			.utc()
-			.set("hour", Number(doctor.availableFromTime.split(":")[0]))
-			.set("minute", Number(doctor.availableFromTime.split(":")[1]))
-			.set("second", 0)
-			.local();
-		const doctorAvailableTo = dayjs()
-			.utc()
-			.set("hour", Number(doctor.availableToTime.split(":")[0]))
-			.set("minute", Number(doctor.availableToTime.split(":")[1]))
-			.set("second", 0)
-			.local();
+		// A disponibilidade do médico é salva em UTC e os horários (slots) são
+		// exibidos/agendados no horário de Brasília. Convertemos explicitamente,
+		// pois o servidor (ex.: Vercel) roda em UTC.
+		const toLocalTime = (utcTime: string) =>
+			dayjs
+				.utc(`${parsedInput.date} ${utcTime}`)
+				.tz("America/Sao_Paulo")
+				.format("HH:mm:ss");
+		const doctorAvailableFrom = toLocalTime(doctor.availableFromTime);
+		const doctorAvailableTo = toLocalTime(doctor.availableToTime);
 		const doctorTimeSlots = timeSlots.filter((time) => {
-			const date = dayjs()
-				.utc()
-				.set("hour", Number(time.split(":")[0]))
-				.set("minute", Number(time.split(":")[1]))
-				.set("second", 0)
-				.local()
-			return (
-				date.format("HH:mm:ss") >= doctorAvailableFrom.format("HH:mm:ss") &&
-				date.format("HH:mm:ss") <= doctorAvailableTo.format("HH:mm:ss")
-			);
+			return time >= doctorAvailableFrom && time <= doctorAvailableTo;
 		});
 		return doctorTimeSlots.map((time) => {
 			return {

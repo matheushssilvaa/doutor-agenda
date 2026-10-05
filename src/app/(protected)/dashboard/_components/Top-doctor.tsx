@@ -3,6 +3,8 @@ import { Stethoscope } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
+import EmptyStateData from "../../_components/Empt-state-data";
+
 interface TopDoctorsProps {
 	doctors: {
 		id: string;
@@ -23,6 +25,15 @@ export default function TopDoctors({ doctors }: TopDoctorsProps) {
 						<CardTitle className="text-base">Médicos</CardTitle>
 					</div>
 				</div>
+
+				{doctors.length === 0 && (
+					<EmptyStateData
+						title="Nenhum médico cadastrado"
+						description="Cadastre médicos para acompanhar quem mais atende na sua clínica"
+						action="Adicionar médico"
+						urlAction="/doctors"
+					/>
+				)}
 
 				{/* Doctors List */}
 				<div className="space-y-6">

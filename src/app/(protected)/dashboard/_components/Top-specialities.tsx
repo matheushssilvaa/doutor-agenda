@@ -13,6 +13,8 @@ import {
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
+import EmptyStateData from "../../_components/Empt-state-data";
+
 interface TopSpecialtiesProps {
 	topSpecialties: {
 		specialty: string;
@@ -57,6 +59,15 @@ export default function TopSpecialties({
 						<CardTitle className="text-base">Especialidades</CardTitle>
 					</div>
 				</div>
+
+				{topSpecialties.length === 0 && (
+					<EmptyStateData
+						title="Nenhum agendamento no período"
+						description="Altere o período ou crie agendamentos para ver as especialidades mais procuradas"
+						action="Adicionar agendamento"
+						urlAction="/appointments"
+					/>
+				)}
 
 				{/* specialtys List */}
 				<div className="space-y-6">

@@ -1,9 +1,10 @@
-import { Card } from "@/components/ui/card";
-import { PageTitle } from "@/components/ui/page-container";
-import { auth } from "@/lib/auth";
 import { LoaderIcon } from "lucide-react";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+import { Card } from "@/components/ui/card";
+import { PageTitle } from "@/components/ui/page-container";
+import { auth } from "@/lib/auth";
 
 export default async function Home() {
 	const session = await auth.api.getSession({

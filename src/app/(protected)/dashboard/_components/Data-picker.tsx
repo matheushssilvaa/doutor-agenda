@@ -14,6 +14,7 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from "@/components/ui/popover";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export function DatePicker({
@@ -27,6 +28,7 @@ export function DatePicker({
 		"to",
 		parseAsIsoDate.withDefault(addMonths(new Date(), 1)),
 	);
+	const isMobile = useIsMobile();
 	const handleDateSelect = (dateRange: DateRange | undefined) => {
 		if (dateRange?.from) {
 			setFrom(dateRange.from, {
@@ -82,7 +84,7 @@ export function DatePicker({
 						defaultMonth={date?.from}
 						selected={date}
 						onSelect={handleDateSelect}
-						numberOfMonths={2}
+						numberOfMonths={isMobile ? 1 : 2}
 						locale={ptBR}
 					/>
 				</PopoverContent>

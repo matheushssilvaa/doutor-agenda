@@ -1,10 +1,31 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../db/index";
 import { customSession } from "better-auth/plugins"
+import { eq } from "drizzle-orm";
 
 import * as schema from "@/db/schema"
-import { eq } from "drizzle-orm";
+
+import { db } from "../db/index";
+
+// Campos extras do usuário. Também são passados ao customSession para que
+// a sessão tipada inclua esses campos (ex.: session.user.plan).
+const userAdditionalFields = {
+	stripeCustomerId: {
+		type: "string",
+		fieldName: "stripeCustomerId",
+		required: false
+	},
+	stripeSubscriptionId: {
+		type: "string",
+		fieldName: "stripeSubscriptionId",
+		required: false
+	},
+	plan: {
+		type: "string",
+		fieldName: "plan",
+		required: false
+	}
+} as const
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {
@@ -37,26 +58,10 @@ export const auth = betterAuth({
 			},
 			session
 		}
-	})],
+	}, { user: { additionalFields: userAdditionalFields } })],
 	user: {
 		modelName: "usersTable",
-		additionalFields: {
-			stripeCustomerId: {
-				type: "string",
-				fieldName: "stripeCustomerId",
-				required: false
-			},
-			stripeSubscriptionId: {
-				type: "string",
-				fieldName: "stripeSubscriptionId",
-				required: false
-			},
-			plan: {
-				type: "string",
-				fieldName: "plan",
-				required: false
-			}
-		}
+		additionalFields: userAdditionalFields
 	},
 	session: {
 		modelName: "sessionsTable"

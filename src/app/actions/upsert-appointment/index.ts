@@ -1,17 +1,19 @@
 "use server"
 
-import { db } from "@/db";
-import { upsertAppointmentSchema } from "./schema";
-import { appointmentsTable } from "@/db/schema";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
-import { actionClient } from "@/lib/next-safe-action";
-import { revalidatePath } from "next/cache";
-import { eq } from "drizzle-orm";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
+import { and, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+
+import { db } from "@/db";
+import { appointmentsTable, patientsTable } from "@/db/schema";
+import { auth } from "@/lib/auth";
+import { actionClient } from "@/lib/next-safe-action";
+
 import { getAvailableTimes } from "../get-available-times";
+import { upsertAppointmentSchema } from "./schema";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -29,6 +31,18 @@ export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 
 		if (!session?.user.clinic?.id) {
 			throw new Error("Clinic not found")
+		}
+
+		// O paciente precisa pertencer à clínica do usuário logado
+		// (o médico é validado em getAvailableTimes)
+		const patient = await db.query.patientsTable.findFirst({
+			where: and(
+				eq(patientsTable.id, parsedInput.patientId),
+				eq(patientsTable.clinicId, session.user.clinic.id)
+			)
+		})
+		if (!patient) {
+			throw new Error("Paciente não encontrado")
 		}
 
 		const availableTimes = await getAvailableTimes({
@@ -64,7 +78,10 @@ export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 						appointmentInCents: parsedInput.appointmentPriceInCents,
 						updatedAt: new Date(),
 					})
-					.where(eq(appointmentsTable.id, parsedInput.id))
+					.where(and(
+						eq(appointmentsTable.id, parsedInput.id),
+						eq(appointmentsTable.clinicId, session.user.clinic.id)
+					))
 			} else {
 				await db
 					.insert(appointmentsTable)
@@ -79,7 +96,7 @@ export const upsertAppointment = actionClient.schema(upsertAppointmentSchema)
 
 			revalidatePath("/appointments")
 			return { success: true }
-		} catch (error: any) {
+		} catch (error) {
 			throw new Error("Internal server error" + error)
 		}
 	})
