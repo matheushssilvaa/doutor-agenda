@@ -2,6 +2,17 @@
 
 Aplicação SaaS para clínicas médicas gerenciarem médicos, pacientes e consultas, com dashboard de métricas, autenticação (e-mail/senha e Google) e assinatura recorrente via Stripe. Interface 100% responsiva (desktop, tablet e mobile).
 
+## Demo
+
+🔗 **Acesse em produção:** [https://doutor-agenda-ashy-omega.vercel.app](https://doutor-agenda-ashy-omega.vercel.app/)
+
+Como testar:
+
+1. Entre com sua conta Google (ou crie uma conta com e-mail e senha).
+2. Informe um nome para a sua clínica — ela já é criada com médicos, pacientes e agendamentos de demonstração, isolados das demais contas.
+3. Navegue pelo dashboard, médicos, pacientes e agendamentos; crie, edite e exclua registros à vontade.
+4. Em **Planos**, teste a assinatura com o cartão de teste do Stripe `4242 4242 4242 4242` (qualquer data futura e CVC). Nenhuma cobrança real é feita.
+
 ## Stack
 
 | Camada | Tecnologias |
@@ -17,6 +28,7 @@ Aplicação SaaS para clínicas médicas gerenciarem médicos, pacientes e consu
 | Datas | dayjs (utc/timezone, locale pt-BR), date-fns, react-day-picker |
 | Pagamentos | Stripe Checkout, Stripe Customer Portal e Webhooks |
 | Qualidade | ESLint (simple-import-sort), Prettier (prettier-plugin-tailwindcss) |
+| Deploy | Vercel (aplicação) e Neon (PostgreSQL serverless) |
 
 ## Funcionalidades
 
