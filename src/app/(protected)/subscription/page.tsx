@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -12,7 +13,6 @@ import {
 import { auth } from "@/lib/auth";
 
 import { SubscriptionPlan } from "./_components/Subscription-plain";
-import { Metadata } from "next";
 
 export const metadata: Metadata = {
 	title: "Doutor Ajuda | Planos",

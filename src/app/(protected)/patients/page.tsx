@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm"
+import { Metadata } from "next"
 import { headers } from "next/headers"
 import { redirect } from "next/navigation"
 
@@ -17,7 +18,6 @@ import { auth } from "@/lib/auth"
 
 import AddPatientButton from "./_components/Add-patient-button"
 import { DataTable } from "./_components/Patient-data-table"
-import { Metadata } from "next"
 
 export const metadata: Metadata = {
 	title: "Doutor Ajuda | Pacientes",

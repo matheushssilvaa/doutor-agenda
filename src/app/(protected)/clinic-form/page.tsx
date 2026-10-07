@@ -1,4 +1,5 @@
 import { DialogTitle } from "@radix-ui/react-dialog"
+import { Metadata } from "next"
 
 import {
 	Dialog,
@@ -8,7 +9,6 @@ import {
 } from "@/components/ui/dialog"
 
 import ClinicForm from "./_components/form"
-import { Metadata } from "next"
 
 export const metadata: Metadata = {
 	title: "Doutor Ajuda | Criar Clínica",

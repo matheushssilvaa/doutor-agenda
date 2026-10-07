@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { eq } from "drizzle-orm";
 import { Calendar } from "lucide-react";
+import { Metadata } from "next";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -25,7 +26,6 @@ import { DatePicker } from "./_components/Data-picker";
 import StatsCards from "./_components/Stats-cards";
 import TopDoctors from "./_components/Top-doctor";
 import TopSpecialties from "./_components/Top-specialities";
-import { Metadata } from "next";
 
 interface DashboardPageProps {
 	searchParams: Promise<{

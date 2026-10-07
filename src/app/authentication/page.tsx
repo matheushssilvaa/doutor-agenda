@@ -1,3 +1,4 @@
+import { Metadata } from "next"
 import { headers } from "next/headers"
 import Image from "next/image"
 import { redirect } from "next/navigation"
@@ -7,7 +8,6 @@ import { auth } from "@/lib/auth"
 
 import LoginForm from "./components/Login-form"
 import SignUpForm from "./components/Sign-up-form"
-import { Metadata } from "next"
 
 export const metadata: Metadata = {
 	title: "Doutor Ajuda | Entrar",
