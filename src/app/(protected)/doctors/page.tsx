@@ -17,6 +17,12 @@ import { auth } from "@/lib/auth"
 
 import AddDoctorButton from "./_components/Add-doctor-button"
 import ListDoctorCard from "./_components/List-doctor-card"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+	title: "Doutor Ajuda | Médicos",
+	description: 'Página de médicos Doutor Ajuda',
+}
 
 const DoctorPage = async () => {
 	const session = await auth.api.getSession({

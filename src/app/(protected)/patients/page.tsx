@@ -17,6 +17,12 @@ import { auth } from "@/lib/auth"
 
 import AddPatientButton from "./_components/Add-patient-button"
 import { DataTable } from "./_components/Patient-data-table"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+	title: "Doutor Ajuda | Pacientes",
+	description: 'Página de pacientes Doutor Ajuda',
+}
 
 const PatientPage = async () => {
 	const session = await auth.api.getSession({

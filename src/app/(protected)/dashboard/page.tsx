@@ -25,12 +25,18 @@ import { DatePicker } from "./_components/Data-picker";
 import StatsCards from "./_components/Stats-cards";
 import TopDoctors from "./_components/Top-doctor";
 import TopSpecialties from "./_components/Top-specialities";
+import { Metadata } from "next";
 
 interface DashboardPageProps {
 	searchParams: Promise<{
 		from: string;
 		to: string;
 	}>;
+}
+
+export const metadata: Metadata = {
+	title: "Doutor Ajuda | Dashboard",
+	description: 'Página de Dashboard Doutor Ajuda',
 }
 
 const DashboardPage = async ({ searchParams }: DashboardPageProps) => {

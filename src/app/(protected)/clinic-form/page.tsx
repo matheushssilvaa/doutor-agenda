@@ -8,6 +8,12 @@ import {
 } from "@/components/ui/dialog"
 
 import ClinicForm from "./_components/form"
+import { Metadata } from "next"
+
+export const metadata: Metadata = {
+	title: "Doutor Ajuda | Criar Clínica",
+	description: 'Página de criação de clínica Doutor Ajuda',
+}
 
 const ClinicFormPage = () => {
 	return (

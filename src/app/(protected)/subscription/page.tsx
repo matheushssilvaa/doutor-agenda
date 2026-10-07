@@ -12,6 +12,12 @@ import {
 import { auth } from "@/lib/auth";
 
 import { SubscriptionPlan } from "./_components/Subscription-plain";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "Doutor Ajuda | Planos",
+	description: 'Página de assinaturas Doutor Ajuda',
+}
 
 const SubscriptionPage = async () => {
 	const session = await auth.api.getSession({
